@@ -1,0 +1,17 @@
+scenario: baseline-city-mission
+description: Initial assumptions for a downtown hospital-to-clinic delivery.
+
+mission:
+  route_name: downtown_route_a
+  max_steps: 3
+
+risks:
+  weather_failure: 0.03
+  gps_spoof: 0.01
+  comms_loss: 0.02
+  recovery_success: 0.70
+
+assumptions:
+  - Single package mission
+  - No mid-route battery swap
+  - Fixed altitude corridor

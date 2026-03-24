@@ -1,0 +1,10 @@
+// Core mission outcomes
+P=? [ F "success" ]
+P=? [ F "failure" ]
+
+// Bounded-time (step) safety checks
+P=? [ F<=3 "success" ]
+P=? [ F<=3 "failure" ]
+
+// Success must eventually happen with high probability target
+P>=0.90 [ F "success" ]

@@ -1,0 +1,30 @@
+dtmc
+
+// Baseline city medical drone risk model (starter scaffold).
+// Extend with richer states, rates, and mission phases as needed.
+
+const double p_weather_failure = 0.03;
+const double p_gps_spoof = 0.01;
+const double p_comms_loss = 0.02;
+const double p_success_recover = 0.70;
+
+module mission
+  // 0 = preflight, 1 = en_route, 2 = delivered, 3 = failed
+  s : [0..3] init 0;
+
+  // Enter flight phase
+  [launch] s=0 -> 1.0 : (s'=1);
+
+  // Continue route with independent risk events
+  [step] s=1 ->
+    (1 - p_weather_failure - p_gps_spoof - p_comms_loss) : (s'=2) +
+    p_weather_failure : (s'=3) +
+    p_gps_spoof : (s'=3) +
+    p_comms_loss : (s'=1);
+
+  // Recovery path after communication degradation
+  [recover] s=1 -> p_success_recover : (s'=2) + (1 - p_success_recover) : (s'=3);
+endmodule
+
+label "success" = s=2;
+label "failure" = s=3;
