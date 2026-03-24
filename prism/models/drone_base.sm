@@ -1,0 +1,138 @@
+// 2D CITY GRID RISK MODEL FOR A MEDICAL DELIVERY DRONE
+// Based on the original grid-world style in this file.
+//
+// Notes:
+// - Uses an MDP to represent route choices (nondeterministic movement).
+// - Each tile has configurable qualities: pedestrian density, flight time,
+//   base crash risk, and visibility.
+// - Entering a tile triggers crash/no-crash probabilistic resolution.
+
+mdp
+
+// Grid size (this model below defines tile qualities for a 3x3 grid).
+const int n = 3;
+
+// Mission bounds
+const int max_steps = 20;
+const int max_time = 200;
+
+// --- Per-tile qualities (x,y) ---
+// Pedestrian density in [0,1]
+const double ped_1_1 = 0.20; const double ped_2_1 = 0.60; const double ped_3_1 = 0.40;
+const double ped_1_2 = 0.30; const double ped_2_2 = 0.85; const double ped_3_2 = 0.50;
+const double ped_1_3 = 0.10; const double ped_2_3 = 0.40; const double ped_3_3 = 0.20;
+
+// Relative flight time cost per tile (integer-like costs as doubles)
+const double ft_1_1 = 1; const double ft_2_1 = 2; const double ft_3_1 = 1;
+const double ft_1_2 = 1; const double ft_2_2 = 3; const double ft_3_2 = 2;
+const double ft_1_3 = 1; const double ft_2_3 = 2; const double ft_3_3 = 1;
+
+// Baseline crash risk in [0,1]
+const double bc_1_1 = 0.01; const double bc_2_1 = 0.03; const double bc_3_1 = 0.02;
+const double bc_1_2 = 0.02; const double bc_2_2 = 0.06; const double bc_3_2 = 0.03;
+const double bc_1_3 = 0.01; const double bc_2_3 = 0.02; const double bc_3_3 = 0.01;
+
+// Visibility score in [0,1] (higher is better)
+const double vis_1_1 = 0.90; const double vis_2_1 = 0.70; const double vis_3_1 = 0.80;
+const double vis_1_2 = 0.85; const double vis_2_2 = 0.50; const double vis_3_2 = 0.65;
+const double vis_1_3 = 0.95; const double vis_2_3 = 0.75; const double vis_3_3 = 0.90;
+
+// Composite tile quality formulas using current position (x,y)
+formula ped_density =
+  x=1 & y=1 ? ped_1_1 :
+  x=2 & y=1 ? ped_2_1 :
+  x=3 & y=1 ? ped_3_1 :
+  x=1 & y=2 ? ped_1_2 :
+  x=2 & y=2 ? ped_2_2 :
+  x=3 & y=2 ? ped_3_2 :
+  x=1 & y=3 ? ped_1_3 :
+  x=2 & y=3 ? ped_2_3 : ped_3_3;
+
+formula flight_time_tile =
+  x=1 & y=1 ? ft_1_1 :
+  x=2 & y=1 ? ft_2_1 :
+  x=3 & y=1 ? ft_3_1 :
+  x=1 & y=2 ? ft_1_2 :
+  x=2 & y=2 ? ft_2_2 :
+  x=3 & y=2 ? ft_3_2 :
+  x=1 & y=3 ? ft_1_3 :
+  x=2 & y=3 ? ft_2_3 : ft_3_3;
+
+formula base_crash =
+  x=1 & y=1 ? bc_1_1 :
+  x=2 & y=1 ? bc_2_1 :
+  x=3 & y=1 ? bc_3_1 :
+  x=1 & y=2 ? bc_1_2 :
+  x=2 & y=2 ? bc_2_2 :
+  x=3 & y=2 ? bc_3_2 :
+  x=1 & y=3 ? bc_1_3 :
+  x=2 & y=3 ? bc_2_3 : bc_3_3;
+
+formula visibility =
+  x=1 & y=1 ? vis_1_1 :
+  x=2 & y=1 ? vis_2_1 :
+  x=3 & y=1 ? vis_3_1 :
+  x=1 & y=2 ? vis_1_2 :
+  x=2 & y=2 ? vis_2_2 :
+  x=3 & y=2 ? vis_3_2 :
+  x=1 & y=3 ? vis_1_3 :
+  x=2 & y=3 ? vis_2_3 : vis_3_3;
+
+// Composite crash probability on current tile.
+formula crash_p = min(0.99, max(0.0, base_crash + 0.25*ped_density + 0.20*(1-visibility)));
+
+module drone
+
+  // Position
+  x : [1..n] init 1;
+  y : [1..n] init 1;
+
+  // 0=active, 1=delivered, 2=crashed
+  status : [0..2] init 0;
+
+  // Two-phase step:
+  // phase=0 choose movement, phase=1 resolve tile risk and accounting.
+  phase : [0..1] init 0;
+
+  steps : [0..max_steps] init 0;
+  t     : [0..max_time] init 0;
+
+  // Movement actions (nondeterministic route choice)
+  [right] status=0 & phase=0 & x<n -> (x'=x+1) & (phase'=1);
+  [left]  status=0 & phase=0 & x>1 -> (x'=x-1) & (phase'=1);
+  [up]    status=0 & phase=0 & y<n -> (y'=y+1) & (phase'=1);
+  [down]  status=0 & phase=0 & y>1 -> (y'=y-1) & (phase'=1);
+
+  // If already at destination, complete mission.
+  [finish] status=0 & phase=0 & x=n & y=n -> (status'=1);
+
+  // Resolve risk and accumulate tile costs.
+  [] status=0 & phase=1 & !(x=n & y=n) ->
+      crash_p : (status'=2) & (phase'=0) & (steps'=min(max_steps,steps+1)) & (t'=min(max_time,t+flight_time_tile)) +
+      (1-crash_p) : (phase'=0) & (steps'=min(max_steps,steps+1)) & (t'=min(max_time,t+flight_time_tile));
+
+  // Entered destination tile: either crash there or successfully deliver.
+  [] status=0 & phase=1 & x=n & y=n ->
+      crash_p : (status'=2) & (phase'=0) & (steps'=min(max_steps,steps+1)) & (t'=min(max_time,t+flight_time_tile)) +
+      (1-crash_p) : (status'=1) & (phase'=0) & (steps'=min(max_steps,steps+1)) & (t'=min(max_time,t+flight_time_tile));
+
+  // Safety timeout guard
+  [] status=0 & steps=max_steps -> (status'=2);
+
+endmodule
+
+label "delivered" = status=1;
+label "crashed" = status=2;
+label "active" = status=0;
+
+rewards "flight_time"
+  status=0 & phase=1 : flight_time_tile;
+endrewards
+
+rewards "pedestrian_exposure"
+  status=0 & phase=1 : ped_density;
+endrewards
+
+rewards "visibility_penalty"
+  status=0 & phase=1 : (1-visibility);
+endrewards
