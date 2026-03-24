@@ -9,7 +9,11 @@ This repository contains a PRISM project for analyzing risks to a medical delive
 
 ## Model Details
 - 2D grid (height abstracted)
+- Each flight has a discrete "mission priority"
 - Each tile has a discrete value for a set of risk-related qualities
+    - Time to cross
+    - Collateral damage risk (pedestrian density, important sites, etc.)
+    - Crash risk (high wind, storms, jamming, etc.)
 - Drone can only see qualities of adjacent tiles and must choose a route dynamically
 - Model outputs the probability of successful delivery within given constraints
 
