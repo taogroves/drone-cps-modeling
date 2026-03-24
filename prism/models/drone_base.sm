@@ -22,10 +22,10 @@ const double ped_1_1 = 0.20; const double ped_2_1 = 0.60; const double ped_3_1 =
 const double ped_1_2 = 0.30; const double ped_2_2 = 0.85; const double ped_3_2 = 0.50;
 const double ped_1_3 = 0.10; const double ped_2_3 = 0.40; const double ped_3_3 = 0.20;
 
-// Relative flight time cost per tile (integer-like costs as doubles)
-const double ft_1_1 = 1; const double ft_2_1 = 2; const double ft_3_1 = 1;
-const double ft_1_2 = 1; const double ft_2_2 = 3; const double ft_3_2 = 2;
-const double ft_1_3 = 1; const double ft_2_3 = 2; const double ft_3_3 = 1;
+// Relative flight time cost per tile (kept as integers because state updates to t must be integral)
+const int ft_1_1 = 1; const int ft_2_1 = 2; const int ft_3_1 = 1;
+const int ft_1_2 = 1; const int ft_2_2 = 3; const int ft_3_2 = 2;
+const int ft_1_3 = 1; const int ft_2_3 = 2; const int ft_3_3 = 1;
 
 // Baseline crash risk in [0,1]
 const double bc_1_1 = 0.01; const double bc_2_1 = 0.03; const double bc_3_1 = 0.02;
@@ -119,11 +119,17 @@ module drone
   // Safety timeout guard
   [] status=0 & steps=max_steps -> (status'=2);
 
+  // Absorbing terminal states avoid PRISM deadlock warnings.
+  [] status=1 -> (status'=1);
+  [] status=2 -> (status'=2);
+
 endmodule
 
 label "delivered" = status=1;
 label "crashed" = status=2;
 label "active" = status=0;
+label "success" = status=1;
+label "failure" = status=2;
 
 rewards "flight_time"
   status=0 & phase=1 : flight_time_tile;

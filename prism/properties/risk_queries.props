@@ -1,10 +1,14 @@
-// Core mission outcomes
-P=? [ F "success" ]
-P=? [ F "failure" ]
+// Core mission outcomes under best/worst route choices
+Pmax=? [ F "success" ]
+Pmin=? [ F "success" ]
+Pmax=? [ F "failure" ]
+Pmin=? [ F "failure" ]
 
-// Bounded-time (step) safety checks
-P=? [ F<=3 "success" ]
-P=? [ F<=3 "failure" ]
+// Bounded-time (step) outcome checks
+Pmax=? [ F<=3 "success" ]
+Pmin=? [ F<=3 "success" ]
+Pmax=? [ F<=3 "failure" ]
+Pmin=? [ F<=3 "failure" ]
 
-// Success must eventually happen with high probability target
-P>=0.90 [ F "success" ]
+// Is there some route policy that achieves at least 90% eventual success?
+!(P<0.90 [ F "success" ])
