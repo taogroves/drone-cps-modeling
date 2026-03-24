@@ -4,9 +4,14 @@ This repository contains a PRISM project for analyzing risks to a medical delive
 
 ## Project goals
 
-- Model mission success and failure behaviors in a city route.
-- Quantify safety and security risks with probabilistic model checking.
+- Model probability of successful delivery within a certain time, given a discrete risk distribution on a 2D route
 - Compare route, threat, and mitigation scenarios.
+
+## Model Details
+- 2D grid (height abstracted)
+- Each tile has a discrete value for a set of risk-related qualities
+- Drone can only see qualities of adjacent tiles and must choose a route dynamically
+- Model outputs the probability of successful delivery within given constraints
 
 ## Directory layout
 
