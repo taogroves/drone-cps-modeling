@@ -119,6 +119,10 @@ module drone
   // Safety timeout guard
   [] status=0 & steps=max_steps -> (status'=2);
 
+  // Absorbing terminal states avoid PRISM deadlock warnings.
+  [] status=1 -> (status'=1);
+  [] status=2 -> (status'=2);
+
 endmodule
 
 label "delivered" = status=1;
