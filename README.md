@@ -1,7 +1,8 @@
 # Drone CPS Risk Modeling (PRISM)
 
 This repository contains a PRISM project for analyzing risks to a medical delivery drone flying through an urban environment. 
-Specifically, it focuses on having regions that are inaccessible (via jamming). 
+Specifically, it focuses on having regions that are inaccessible (via buildings, [stationary jantiors in the original model, 
+techinically). 
 
 ## Project goals
 
