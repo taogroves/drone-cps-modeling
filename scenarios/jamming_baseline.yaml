@@ -1,0 +1,51 @@
+scenario: jamming-baseline
+description: >
+  Baseline adversarial jamming scenario. Three jam zones placed
+  along likely diagonal routes from (0,0) to (9,9). Activation
+  probabilities represent a moderately capable adversary.
+
+grid:
+  width: 10
+  height: 10
+
+mission:
+  start: [0, 0]
+  destination: [9, 9]
+  time_budget: 40
+  normal_move_time: 1
+  slow_move_time: 2
+
+jamming_zones:
+  camera:
+    enabled: true
+    bounds: { x: [3, 5], y: [3, 5] }   # 3x3 zone, center of grid
+    activation_prob: 0.80
+    effect: "Drone loses obstacle vision; increased crash risk"
+
+  gps:
+    enabled: true
+    bounds: { x: [6, 8], y: [2, 4] }   # 3x3 zone, east side
+    activation_prob: 0.70
+    effect: "Position uncertainty; crash risk + recalibration time"
+
+  comms:
+    enabled: true
+    bounds: { x: [4, 7], y: [6, 8] }   # 4x3 zone, upper-mid
+    activation_prob: 0.75
+    effect: "Loses base contact; defaults to preloaded route (slower)"
+
+crash_probabilities:
+  base: 0.001
+  camera_push: 0.15
+  camera_slow: 0.05
+  gps_push: 0.10
+  gps_slow: 0.03
+  comms_push: 0.06
+  comms_slow: 0.02
+
+assumptions:
+  - Jamming is transient — no lasting physical damage to drone
+  - Drone cannot detect jamming before entering a cell
+  - Organ delivery is high-priority — drone is risk-tolerant
+  - All three jam types are independent
+  - Jam zones do not overlap in this baseline (can be changed)

@@ -1,0 +1,236 @@
+mdp
+
+// ============================================================
+// JAMMING GAUNTLET SCENARIO — Medical Delivery Drone
+// ============================================================
+// A harder scenario where jam zones are placed so the drone
+// CANNOT avoid all of them. The camera jam forms a wall across
+// the full grid width; GPS and comms block the two main
+// detour routes. Zones overlap in places, stacking risk.
+//
+// Grid layout:
+//
+//   Y
+//   9 C C C C C . . . . .
+//   8 C C C C C . . . . .     C  = Comms (x=0-4, y=3-9)
+//   7 C C C C C . . . . .     G  = GPS   (x=6-9, y=0-6)
+//   6 AC AC AC AC AC A A AG AG AG  A  = Camera wall (full width, y=3-6)
+//   5 AC AC AC AC AC A A AG AG AG  AC = Camera + Comms overlap
+//   4 AC AC AC AC AC A A AG AG AG  AG = Camera + GPS overlap
+//   3 AC AC AC AC AC A A AG AG AG
+//   2 . . . . . . G G G G     S  = Start (0,0)
+//   1 . . . . . . G G G G     D  = Destination (9,9)
+//   0 S . . . . . G G G G
+//     0 1 2 3 4 5 6 7 8 9  X
+//
+// Key properties:
+//   - Camera wall (y=3-6, 4 rows) spans full width — UNAVOIDABLE
+//   - Camera activation = 100% (guaranteed jamming in wall)
+//   - Left side of wall overlaps comms (x=0-4): camera + comms stack
+//   - Right side of wall overlaps GPS (x=6-9): camera + GPS stack
+//   - Only x=5 through the wall has camera alone (1-cell-wide gap)
+//   - GPS blocks east-first routes below the wall (x=6-9, y=0-6)
+//   - Comms blocks north-first routes above the wall (x=0-4, y=3-9)
+//   - Time budget reduced to 30 — slow_down becomes costly
+// ============================================================
+
+
+// ==================== Grid Parameters ====================
+const int GW = 10;
+const int GH = 10;
+
+// ==================== Mission Endpoints ====================
+const int SX = 0;  const int SY = 0;
+const int EX = 9;  const int EY = 9;
+
+// ==================== Time Budget ====================
+const int T_MAX  = 30;    // tighter deadline — forces riskier choices
+const int T_NORM = 1;
+const int T_SLOW = 2;
+const int T_GPS_EXTRA   = 1;
+const int T_COMMS_EXTRA = 1;
+
+// ==================== Crash Probabilities ====================
+const double p_crash_base = 0.001;
+
+const double p_crash_cam_push  = 0.15;
+const double p_crash_cam_slow  = 0.05;
+
+const double p_crash_gps_push  = 0.10;
+const double p_crash_gps_slow  = 0.03;
+
+const double p_crash_comms_push = 0.06;
+const double p_crash_comms_slow = 0.02;
+
+
+// ============================================================
+//  JAMMING ZONE CONFIGURATION — GAUNTLET LAYOUT
+// ============================================================
+
+// ================== CAMERA JAMMING ==================
+// Full-width wall, 4 rows thick — drone must cross all 4
+const int ENABLE_CAM_JAM = 1;
+const int CJ_XMIN = 0;  const int CJ_XMAX = 9;
+const int CJ_YMIN = 3;  const int CJ_YMAX = 6;
+const double p_cam_active = 1.00;   // guaranteed — well-funded adversary
+
+formula in_cam_zone = (ENABLE_CAM_JAM = 1
+    & x >= CJ_XMIN & x <= CJ_XMAX
+    & y >= CJ_YMIN & y <= CJ_YMAX);
+
+// ================== GPS JAMMING ==================
+// Right side, bottom half — blocks east-first routes
+// Overlaps camera wall at (6-9, 3-6)
+const int ENABLE_GPS_JAM = 1;
+const int GJ_XMIN = 6;  const int GJ_XMAX = 9;
+const int GJ_YMIN = 0;  const int GJ_YMAX = 6;
+const double p_gps_active = 0.90;
+
+formula in_gps_zone = (ENABLE_GPS_JAM = 1
+    & x >= GJ_XMIN & x <= GJ_XMAX
+    & y >= GJ_YMIN & y <= GJ_YMAX);
+
+// ================== COMMS JAMMING ==================
+// Left side, upper half — blocks north-first routes
+// Overlaps camera wall at (0-4, 3-6)
+const int ENABLE_COMMS_JAM = 1;
+const int CMJ_XMIN = 0;  const int CMJ_XMAX = 4;
+const int CMJ_YMIN = 3;  const int CMJ_YMAX = 9;
+const double p_comms_active = 0.85;
+
+formula in_comms_zone = (ENABLE_COMMS_JAM = 1
+    & x >= CMJ_XMIN & x <= CMJ_XMAX
+    & y >= CMJ_YMIN & y <= CMJ_YMAX);
+
+
+// ==================== Derived Formulas ====================
+
+formula at_dest   = (x = EX & y = EY);
+formula timed_out = (t >= T_MAX);
+formula active    = (status = 0);
+formula jammed    = (cam + gps + comms > 0);
+
+formula p_crash_push = p_crash_base
+    + cam   * p_crash_cam_push
+    + gps   * p_crash_gps_push
+    + comms * p_crash_comms_push;
+
+formula p_crash_slow = p_crash_base
+    + cam   * p_crash_cam_slow
+    + gps   * p_crash_gps_slow
+    + comms * p_crash_comms_slow;
+
+formula t_cost_push = T_NORM + gps * T_GPS_EXTRA;
+formula t_cost_slow = T_SLOW + gps * T_GPS_EXTRA + comms * T_COMMS_EXTRA;
+
+
+// ============================================================
+//  DRONE MODULE
+// ============================================================
+
+module drone
+    x : [0..GW-1] init SX;
+    y : [0..GH-1] init SY;
+    t : [0..T_MAX] init 0;
+
+    // 0 = active,  1 = delivered,  2 = crashed,  3 = timed out
+    status : [0..3] init 0;
+
+    // Movement / response phase
+    phase : [0..2] init 0;
+
+    // NOTE: cam, gps, comms variables are owned by their respective
+    // jam modules below. The drone reads them cross-module.
+
+    // ------ Phase 0: Choose movement direction ------
+    [move_n] active & phase=0 & !timed_out & y < GH-1 ->
+        (y'=y+1) & (phase'=1);
+    [move_s] active & phase=0 & !timed_out & y > 0 ->
+        (y'=y-1) & (phase'=1);
+    [move_e] active & phase=0 & !timed_out & x < GW-1 ->
+        (x'=x+1) & (phase'=1);
+    [move_w] active & phase=0 & !timed_out & x > 0 ->
+        (x'=x-1) & (phase'=1);
+
+    [timeout] active & phase=0 & timed_out ->
+        (status'=3);
+
+    // ------ Phase 1: Jamming revealed ------
+    [check_jam] active & phase=1 ->
+        (phase'=2);
+
+    // ------ Phase 2: Respond to the cell ------
+    [arrive] active & phase=2 & at_dest ->
+        (status'=1) & (t'=min(t + T_NORM, T_MAX));
+
+    [proceed] active & phase=2 & !at_dest & !jammed ->
+        (1 - p_crash_base) : (t'=min(t + T_NORM, T_MAX)) & (phase'=0)
+      + p_crash_base       : (status'=2);
+
+    [push_through] active & phase=2 & !at_dest & jammed ->
+        (1 - p_crash_push) : (t'=min(t + t_cost_push, T_MAX)) & (phase'=0)
+      + p_crash_push       : (status'=2);
+
+    [slow_down] active & phase=2 & !at_dest & jammed ->
+        (1 - p_crash_slow) : (t'=min(t + t_cost_slow, T_MAX)) & (phase'=0)
+      + p_crash_slow       : (status'=2);
+
+endmodule
+
+
+// ============================================================
+//  CAMERA JAMMING MODULE
+// ============================================================
+module camera_jam
+    cam : [0..1] init 0;
+
+    [check_jam]  in_cam_zone  -> p_cam_active       : (cam'=1)
+                                + (1 - p_cam_active) : (cam'=0);
+    [check_jam] !in_cam_zone  -> (cam'=0);
+endmodule
+
+// ============================================================
+//  GPS JAMMING MODULE
+// ============================================================
+module gps_jam
+    gps : [0..1] init 0;
+
+    [check_jam]  in_gps_zone  -> p_gps_active       : (gps'=1)
+                                + (1 - p_gps_active) : (gps'=0);
+    [check_jam] !in_gps_zone  -> (gps'=0);
+endmodule
+
+// ============================================================
+//  COMMS JAMMING MODULE
+// ============================================================
+module comms_jam
+    comms : [0..1] init 0;
+
+    [check_jam]  in_comms_zone  -> p_comms_active       : (comms'=1)
+                                  + (1 - p_comms_active) : (comms'=0);
+    [check_jam] !in_comms_zone  -> (comms'=0);
+endmodule
+
+
+// ============================================================
+//  LABELS
+// ============================================================
+label "delivered"       = status = 1;
+label "crashed"         = status = 2;
+label "timed_out"       = status = 3;
+label "mission_failed"  = status = 2 | status = 3;
+
+// ============================================================
+//  REWARD STRUCTURES
+// ============================================================
+rewards "time"
+    [arrive]       true : T_NORM;
+    [proceed]      true : T_NORM;
+    [push_through] true : t_cost_push;
+    [slow_down]    true : t_cost_slow;
+endrewards
+
+rewards "jam_exposure"
+    [push_through] true : 1;
+    [slow_down]    true : 1;
+endrewards

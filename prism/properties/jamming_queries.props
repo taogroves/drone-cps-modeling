@@ -1,0 +1,45 @@
+// ============================================================
+// JAMMING MODEL — PCTL / reward queries
+// ============================================================
+
+// --- Mission success probability ---
+// Best-case drone strategy (optimal routing + response choices)
+Pmax=? [ F "delivered" ]
+// Worst-case drone strategy
+Pmin=? [ F "delivered" ]
+
+// --- Crash probability ---
+Pmax=? [ F "crashed" ]
+Pmin=? [ F "crashed" ]
+
+// --- Timeout probability ---
+Pmax=? [ F "timed_out" ]
+Pmin=? [ F "timed_out" ]
+
+// --- Any mission failure (crash OR timeout) ---
+Pmax=? [ F "mission_failed" ]
+Pmin=? [ F "mission_failed" ]
+
+// --- Bounded-step delivery ---
+// NOTE: Each grid move = 3 PRISM transitions (move → check_jam → respond).
+// Minimum path is 18 moves = 54 transitions. Bounds must account for this.
+// Tight deadline (just barely enough for shortest path)
+Pmax=? [ F<=60 "delivered" ]
+// Comfortable deadline
+Pmax=? [ F<=90 "delivered" ]
+
+// --- Safety threshold checks ---
+// Is there a strategy that achieves >= 90% delivery probability?
+P>=0.90 [ F "delivered" ]
+// Is there a strategy that achieves >= 95%?
+P>=0.95 [ F "delivered" ]
+// Can crash probability be kept below 5%?
+P<=0.05 [ F "crashed" ]
+
+// --- Expected mission time (under optimal strategy) ---
+R{"time"}min=? [ F status>0 ]
+R{"time"}max=? [ F status>0 ]
+
+// --- Expected number of jammed cells encountered ---
+R{"jam_exposure"}min=? [ F status>0 ]
+R{"jam_exposure"}max=? [ F status>0 ]

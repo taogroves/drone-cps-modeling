@@ -1,0 +1,79 @@
+scenario: jamming-gauntlet
+description: >
+  High-threat adversarial scenario. Camera jam forms an unavoidable
+  4-row wall with 100% activation. GPS and comms zones overlap the
+  wall on the right and left sides respectively, creating stacked
+  risk. Time budget is tightened to 30, pressuring the drone toward
+  riskier push-through decisions.
+
+grid:
+  width: 10
+  height: 10
+
+mission:
+  start: [0, 0]
+  destination: [9, 9]
+  time_budget: 30         # tighter than baseline — forces riskier choices
+  normal_move_time: 1
+  slow_move_time: 2
+
+jamming_zones:
+  camera:
+    enabled: true
+    bounds: { x: [0, 9], y: [3, 6] }   # full-width, 4 rows thick
+    activation_prob: 1.00               # guaranteed — well-funded adversary
+    effect: "Drone loses obstacle vision; increased crash risk"
+    note: "Every path must cross 4 jammed rows"
+
+  gps:
+    enabled: true
+    bounds: { x: [6, 9], y: [0, 6] }   # right side, bottom 2/3
+    activation_prob: 0.90
+    effect: "Position uncertainty; crash risk + recalibration time"
+    note: "Overlaps camera wall at (6-9, 3-6) — camera + GPS stack"
+
+  comms:
+    enabled: true
+    bounds: { x: [0, 4], y: [3, 9] }   # left side, top 2/3
+    activation_prob: 0.85
+    effect: "Loses base contact; defaults to preloaded route (slower)"
+    note: "Overlaps camera wall at (0-4, 3-6) — camera + comms stack"
+
+zone_overlaps:
+  - cells: { x: [6, 9], y: [3, 6] }
+    types: [camera, gps]
+    push_crash_prob: 0.251   # 0.001 + 0.15 + 0.10
+    slow_crash_prob: 0.081   # 0.001 + 0.05 + 0.03
+  - cells: { x: [0, 4], y: [3, 6] }
+    types: [camera, comms]
+    push_crash_prob: 0.211   # 0.001 + 0.15 + 0.06
+    slow_crash_prob: 0.071   # 0.001 + 0.05 + 0.02
+  - cells: { x: [5, 5], y: [3, 6] }
+    types: [camera]
+    push_crash_prob: 0.151   # 0.001 + 0.15
+    slow_crash_prob: 0.051   # 0.001 + 0.05
+    note: "Narrowest gap — camera only, 1 column wide"
+
+crash_probabilities:
+  base: 0.001
+  camera_push: 0.15
+  camera_slow: 0.05
+  gps_push: 0.10
+  gps_slow: 0.03
+  comms_push: 0.06
+  comms_slow: 0.02
+
+key_tradeoffs:
+  - "Only x=5 through the wall has camera-only risk (1-cell-wide corridor)"
+  - "x=0-4 through the wall stacks camera + comms (21% push crash)"
+  - "x=6-9 through the wall stacks camera + GPS (25% push crash)"
+  - "Tight 30-step budget means slow_down through 4 wall rows risks timeout"
+  - "Push through saves time but ~15-25% crash per jammed cell"
+
+assumptions:
+  - Jamming is transient — no lasting physical damage to drone
+  - Drone cannot detect jamming before entering a cell
+  - Organ delivery is high-priority — drone is risk-tolerant
+  - All three jam types are independent
+  - Camera wall is 100% activation — well-resourced adversary
+  - GPS and comms overlap the camera wall — risks stack additively

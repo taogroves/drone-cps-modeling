@@ -1,0 +1,277 @@
+mdp
+
+// ============================================================
+// JAMMING THREAT MODEL — Medical Delivery Drone
+// ============================================================
+// Models adversarial signal jamming affecting a medical drone
+// traversing a 2D urban grid. Three independent, toggleable
+// jamming types:
+//
+//   Camera  – drone loses obstacle vision → higher crash risk
+//   GPS     – position uncertainty → crash risk + recalibration time
+//   Comms   – loses base contact → falls back to preloaded route
+//                                   (conservative, costs extra time)
+//
+// KEY DESIGN PROPERTY:
+//   The drone discovers jamming ONLY upon entering a cell.
+//   It cannot pre-detect or route around jammed areas.
+//   This is modeled via probabilistic jam activation: each cell
+//   inside a zone has an activation probability resolved on entry.
+//
+// MDP nondeterminism represents the drone's decisions:
+//   (1) Movement direction  (N / S / E / W)
+//   (2) Response to jamming (push_through / slow_down)
+//
+// To integrate with the city model: synchronize on movement
+// labels or replace the grid/time constants with shared ones.
+// ============================================================
+
+
+// ==================== Grid Parameters ====================
+const int GW = 10;   // grid width
+const int GH = 10;   // grid height
+
+// ==================== Mission Endpoints ====================
+const int SX = 0;  const int SY = 0;   // start (e.g. hospital A)
+const int EX = 9;  const int EY = 9;   // destination (e.g. hospital B)
+
+// ==================== Time Budget ====================
+const int T_MAX  = 40;   // organ viability deadline (time steps)
+const int T_NORM = 1;    // time cost: normal move (no jamming)
+const int T_SLOW = 2;    // time cost: slowed move through jam zone
+
+// Extra time penalties by jam type
+const int T_GPS_EXTRA   = 1;   // GPS recalibration overhead
+const int T_COMMS_EXTRA = 1;   // conservative preloaded-route overhead
+
+// ==================== Crash Probabilities ====================
+// Base crash probability per move (no jamming)
+const double p_crash_base = 0.001;
+
+// Camera jam: can't see obstacles
+const double p_crash_cam_push  = 0.15;   // push through
+const double p_crash_cam_slow  = 0.05;   // slow down
+
+// GPS jam: position uncertainty
+const double p_crash_gps_push  = 0.10;
+const double p_crash_gps_slow  = 0.03;
+
+// Comms jam: no emergency coordination from base
+const double p_crash_comms_push = 0.06;
+const double p_crash_comms_slow = 0.02;
+
+// NOTE: crash probabilities are additive across active jam types.
+// Ensure the sum of all *_push constants < 1.0  (currently max 0.311).
+
+
+// ============================================================
+//  JAMMING ZONE CONFIGURATION
+// ============================================================
+// Each jam type has:
+//   ENABLE flag   – set to 0 to disable entirely (recommended toggle)
+//   Zone bounds   – rectangular region where jamming CAN occur
+//   p_*_active    – probability jam is actually active in a zone cell
+//                   (1.0 = always on;  < 1.0 = stochastic per entry)
+//
+// The combination of fixed zones + activation probability lets you
+// model both "fixed known adversary regions" and "uncertain threat
+// areas" depending on how you set p_*_active.
+// ============================================================
+
+// ================== CAMERA JAMMING ==================
+// Set ENABLE_CAM_JAM = 0 to disable
+const int ENABLE_CAM_JAM = 1;
+const int CJ_XMIN = 3;  const int CJ_XMAX = 5;
+const int CJ_YMIN = 3;  const int CJ_YMAX = 5;
+const double p_cam_active = 0.80;
+
+formula in_cam_zone = (ENABLE_CAM_JAM = 1
+    & x >= CJ_XMIN & x <= CJ_XMAX
+    & y >= CJ_YMIN & y <= CJ_YMAX);
+
+// ================== GPS JAMMING ==================
+// Set ENABLE_GPS_JAM = 0 to disable
+const int ENABLE_GPS_JAM = 1;
+const int GJ_XMIN = 6;  const int GJ_XMAX = 8;
+const int GJ_YMIN = 2;  const int GJ_YMAX = 4;
+const double p_gps_active = 0.70;
+
+formula in_gps_zone = (ENABLE_GPS_JAM = 1
+    & x >= GJ_XMIN & x <= GJ_XMAX
+    & y >= GJ_YMIN & y <= GJ_YMAX);
+
+// ================== COMMS JAMMING ==================
+// Set ENABLE_COMMS_JAM = 0 to disable
+const int ENABLE_COMMS_JAM = 1;
+const int CMJ_XMIN = 4;  const int CMJ_XMAX = 7;
+const int CMJ_YMIN = 6;  const int CMJ_YMAX = 8;
+const double p_comms_active = 0.75;
+
+formula in_comms_zone = (ENABLE_COMMS_JAM = 1
+    & x >= CMJ_XMIN & x <= CMJ_XMAX
+    & y >= CMJ_YMIN & y <= CMJ_YMAX);
+
+
+// ==================== Derived Formulas ====================
+
+formula at_dest   = (x = EX & y = EY);
+formula timed_out = (t >= T_MAX);
+formula active    = (status = 0);
+formula jammed    = (cam + gps + comms > 0);
+
+// Crash probability given jam state and response choice
+formula p_crash_push = p_crash_base
+    + cam   * p_crash_cam_push
+    + gps   * p_crash_gps_push
+    + comms * p_crash_comms_push;
+
+formula p_crash_slow = p_crash_base
+    + cam   * p_crash_cam_slow
+    + gps   * p_crash_gps_slow
+    + comms * p_crash_comms_slow;
+
+// Time cost given jam state and response choice
+//   push: normal time + GPS recal if GPS jammed
+//   slow: slow time   + GPS recal + comms conservative-route overhead
+formula t_cost_push = T_NORM + gps * T_GPS_EXTRA;
+formula t_cost_slow = T_SLOW + gps * T_GPS_EXTRA + comms * T_COMMS_EXTRA;
+
+
+// ============================================================
+//  DRONE MODULE
+// ============================================================
+// Phase flow per step:
+//   0  choose movement direction   (nondeterministic — drone decides)
+//   1  jamming revealed             (probabilistic — environment resolves)
+//   2  choose response & resolve    (nondeterministic + probabilistic)
+//       → back to phase 0
+// ============================================================
+
+module drone
+    x : [0..GW-1] init SX;
+    y : [0..GH-1] init SY;
+    t : [0..T_MAX] init 0;
+
+    // 0 = active,  1 = delivered,  2 = crashed,  3 = timed out
+    status : [0..3] init 0;
+
+    // Movement / response phase
+    phase : [0..2] init 0;
+
+    // NOTE: cam, gps, comms variables are owned by their respective
+    // jam modules below. The drone reads them cross-module.
+
+    // ------ Phase 0: Choose movement direction ------
+    // Guards include !timed_out so timeout is the only option when time expires
+
+    [move_n] active & phase=0 & !timed_out & y < GH-1 ->
+        (y'=y+1) & (phase'=1);
+    [move_s] active & phase=0 & !timed_out & y > 0 ->
+        (y'=y-1) & (phase'=1);
+    [move_e] active & phase=0 & !timed_out & x < GW-1 ->
+        (x'=x+1) & (phase'=1);
+    [move_w] active & phase=0 & !timed_out & x > 0 ->
+        (x'=x-1) & (phase'=1);
+
+    // Time has expired — organ is no longer viable
+    [timeout] active & phase=0 & timed_out ->
+        (status'=3);
+
+    // ------ Phase 1: Jamming revealed ------
+    // Synchronizes with the three jam modules below.
+    // Each jam module independently and probabilistically sets its
+    // variable; PRISM computes the joint product distribution.
+    [check_jam] active & phase=1 ->
+        (phase'=2);
+
+    // ------ Phase 2: Respond to the cell ------
+
+    // Arrived at destination — mission success (even if jammed)
+    [arrive] active & phase=2 & at_dest ->
+        (status'=1) & (t'=min(t + T_NORM, T_MAX));
+
+    // Clear cell — no jamming, proceed normally
+    [proceed] active & phase=2 & !at_dest & !jammed ->
+        (1 - p_crash_base) : (t'=min(t + T_NORM, T_MAX)) & (phase'=0)
+      + p_crash_base       : (status'=2);
+
+    // Jammed — PUSH THROUGH: accept higher risk, save time
+    // Rationale: organ delivery is time-critical; the drone judges
+    // it can manage the degraded conditions.
+    [push_through] active & phase=2 & !at_dest & jammed ->
+        (1 - p_crash_push) : (t'=min(t + t_cost_push, T_MAX)) & (phase'=0)
+      + p_crash_push       : (status'=2);
+
+    // Jammed — SLOW DOWN: reduce risk, spend more time
+    // For comms jam specifically, this represents falling back to
+    // the preloaded known route at a safer, slower pace.
+    [slow_down] active & phase=2 & !at_dest & jammed ->
+        (1 - p_crash_slow) : (t'=min(t + t_cost_slow, T_MAX)) & (phase'=0)
+      + p_crash_slow       : (status'=2);
+
+endmodule
+
+
+// ============================================================
+//  CAMERA JAMMING MODULE
+// ============================================================
+// Synchronizes on [check_jam]. Sets cam=1 with probability
+// p_cam_active when the drone is inside the camera jam zone.
+// Outside the zone (or when disabled), cam is always 0.
+
+module camera_jam
+    cam : [0..1] init 0;
+
+    [check_jam]  in_cam_zone  -> p_cam_active       : (cam'=1)
+                                + (1 - p_cam_active) : (cam'=0);
+    [check_jam] !in_cam_zone  -> (cam'=0);
+endmodule
+
+// ============================================================
+//  GPS JAMMING MODULE
+// ============================================================
+module gps_jam
+    gps : [0..1] init 0;
+
+    [check_jam]  in_gps_zone  -> p_gps_active       : (gps'=1)
+                                + (1 - p_gps_active) : (gps'=0);
+    [check_jam] !in_gps_zone  -> (gps'=0);
+endmodule
+
+// ============================================================
+//  COMMS JAMMING MODULE
+// ============================================================
+module comms_jam
+    comms : [0..1] init 0;
+
+    [check_jam]  in_comms_zone  -> p_comms_active       : (comms'=1)
+                                  + (1 - p_comms_active) : (comms'=0);
+    [check_jam] !in_comms_zone  -> (comms'=0);
+endmodule
+
+
+// ============================================================
+//  LABELS
+// ============================================================
+label "delivered"       = status = 1;
+label "crashed"         = status = 2;
+label "timed_out"       = status = 3;
+label "mission_failed"  = status = 2 | status = 3;
+
+// ============================================================
+//  REWARD STRUCTURES
+// ============================================================
+
+// Total elapsed mission time
+rewards "time"
+    [arrive]       true : T_NORM;
+    [proceed]      true : T_NORM;
+    [push_through] true : t_cost_push;
+    [slow_down]    true : t_cost_slow;
+endrewards
+
+// Number of jammed cells the drone traversed
+rewards "jam_exposure"
+    [push_through] true : 1;
+    [slow_down]    true : 1;
+endrewards
