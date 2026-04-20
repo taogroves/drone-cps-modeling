@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import os
 
-def generate_random_prism(M=5, N=6, num_obstacles=3, seed=None):
+def generate_random_prism(M: int = 5, N: int = 6, num_obstacles: int = 3, seed=None):
     """
     Generates a PRISM file with randomly placed obstacles and goal.
     Returns the file path of the generated model.
