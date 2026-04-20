@@ -185,7 +185,7 @@ def synthesize_and_visualize(prism_filepath):
     plt.show()
 
 
-def plot_bounded_reachability(prism_filepath, max_k=30):
+def plot_bounded_reachability(prism_filepath, max_k=50):
     """
     Parses the PRISM file, iteratively checks bounded properties for K in [0, max_k],
     and plots the probabilities as a line graph.
