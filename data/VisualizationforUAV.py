@@ -4,41 +4,6 @@ import matplotlib.patches as patches
 
 path = "/home/glawrence/Downloads/uav.prism"
 
-# def export_mdp_to_dot(model, output_filename):
-#     """
-#     Manually iterates through a stormpy MDP model and writes a Graphviz DOT file.
-#     """
-#     with open(output_filename, 'w') as f:
-#         f.write("digraph MDP {\n")
-#         f.write("  rankdir=LR;\n") # Left-to-right layout
-#         f.write("  node [shape=circle, style=filled, fillcolor=white];\n")
-        
-#         # Iterate over all states in the model
-#         for state in model.states:
-#             # Iterate over all available actions for the current state
-#             for action in state.actions:
-#                 # Iterate over the resulting transitions (the probability distribution)
-#                 for transition in action.transitions:
-#                     target_state = transition.column
-#                     probability = transition.value()
-                    
-#                     # Because this is an Interval MDP, 'probability' will export the interval bounds nicely
-#                     label = f'a{action.id}\\np={probability}'
-                    
-#                     f.write(f'  s{state.id} -> s{target_state} [label="{label}", fontsize=10];\n')
-                    
-#         f.write("}\n")
-
-# model = stormpy.build_sparse_interval_model(prism_program)
-
-# print("Number of states: {}".format(model.nr_states))
-
-# export_mdp_to_dot(model, "uav_model.dot")
-
-# print("Export complete! Run the following in your terminal to generate the image:")
-# print("dot -Tpng uav_model.dot -o uav_model.png")
-
-
 def generate_map_from_model(prism_filepath):
     # Parse and build the model
     prism_program = stormpy.parse_prism_program(prism_filepath)
