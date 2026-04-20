@@ -68,7 +68,7 @@ label "goal" = goal;
 """
     
     filename = f"uav_env_{seed}.prism"
-    with open(filename, "w") as f:
+    with open(filename, "w", encoding="utf-8") as f:
         f.write(prism_template)
         
     return filename
@@ -97,10 +97,13 @@ def synthesize_and_visualize(prism_filepath):
     print("Synthesizing optimal policy (Pmax=? [ !crashed U goal ])...")
     formula_str = 'Pmax=? [ !"crashed" U "goal" ]'
     properties = stormpy.parse_properties(formula_str, prism_program)
+    task = stormpy.CheckTask(properties[0].raw_formula)
+    task.set_produce_schedulers(True)
+    task.set_uncertainty_resolution_mode(stormpy.UncertaintyResolutionMode.ROBUST)
     
     # Model check and extract the scheduler
-    result = stormpy.model_checking(model, properties[0], extract_scheduler=True)
-    scheduler = result.get_scheduler()
+    result = stormpy.check_interval_mdp(model, task, stormpy.Environment())
+    scheduler = result.scheduler
     
     # Extract State Data for mapping
     labels = model.labeling
@@ -123,7 +126,7 @@ def synthesize_and_visualize(prism_filepath):
         if "init" in state_labels: start_pos = (x, y)
 
     # Draw the Base Map
-    fig, ax = plt.subplots(figsize=(6, 7))
+    _, ax = plt.subplots(figsize=(6, 7))
     for x in range(1, max_x + 1):
         for y in range(1, max_y + 1):
             facecolor = 'white'
@@ -149,14 +152,14 @@ def synthesize_and_visualize(prism_filepath):
         if "crashed" in state_labels or "goal" in state_labels:
             continue
 
-        if scheduler.is_defined(state):
-            choice = scheduler.get_choice(state)
+        choice = scheduler.get_choice(state)
+        if choice.defined:
             action_index = choice.get_deterministic_choice()
             
             # Map choice index to the text label ('up', 'left', 'right')
             action_name = None
             for label in model.choice_labeling.get_labels():
-                if model.choice_labeling.get_states_and_choices(label).contains(s_id, action_index):
+                if model.choice_labeling.get_choices(label).get(action_index):
                     action_name = label
                     break
             
