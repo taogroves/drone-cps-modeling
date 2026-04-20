@@ -4,9 +4,6 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import os
 
-# ==========================================
-# 1. Procedural Generation
-# ==========================================
 def generate_random_prism(M=5, N=6, num_obstacles=3, seed=None):
     """
     Generates a PRISM file with randomly placed obstacles and goal.
@@ -74,9 +71,6 @@ label "goal" = goal;
     return filename
 
 
-# ==========================================
-# 2. Synthesis & Visualization
-# ==========================================
 def synthesize_and_visualize(prism_filepath):
     """
     Parses the PRISM file, synthesizes the optimal policy via PCTL,
@@ -191,9 +185,6 @@ def synthesize_and_visualize(prism_filepath):
     plt.show()
 
 
-# ==========================================
-# 3. Main Execution
-# ==========================================
 if __name__ == "__main__":
     # Generate a random seed
     my_seed = random.randint(1000, 9999)
