@@ -8,7 +8,7 @@ compute_bounded_reachability_curve and compute_bounded_safety_curve (max_k=--bou
 store K=1..max_k, and plot two candlesticks (reachability vs finite-horizon safety).
 
 Depends on stormpy, policyrandomizedbuildings.generate_random_prism, and
-HunterProperties.compute_bounded_reachability_curve.
+Propertiesv1.compute_bounded_reachability_curve.
 """
 
 from __future__ import annotations
@@ -31,11 +31,12 @@ _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 if _SCRIPT_DIR not in sys.path:
     sys.path.insert(0, _SCRIPT_DIR)
 
-from HunterProperties import (
+from Propertiesv1 import (
     compute_bounded_reachability_curve,
     compute_bounded_safety_curve,
 )
 from policyrandomizedbuildings import generate_random_prism
+from jamming_overlay import baseline_for_grid
 
 
 @contextmanager
@@ -112,11 +113,15 @@ def run_seed(
     workspace: str,
     keep_prism: bool,
     bounded_k_max: int | None = None,
+    jamming: dict | None = None,
 ) -> dict[str, Any]:
-    prism_name = f"uav_env_{seed}.prism"
+    suffix = "_jam" if jamming is not None else ""
+    prism_name = f"uav_env_{seed}{suffix}.prism"
     prism_path = os.path.join(workspace, prism_name)
     with working_directory(workspace):
-        generate_random_prism(M=m, N=n, num_obstacles=num_obstacles, seed=seed)
+        generate_random_prism(
+            M=m, N=n, num_obstacles=num_obstacles, seed=seed, jamming=jamming
+        )
     try:
         try:
             pmax, n_states = robust_reach_probability(
@@ -394,6 +399,11 @@ def main() -> int:
         default="",
         help="Path for safety candlestick PNG (default: bounded_safety_candlestick.png)",
     )
+    parser.add_argument(
+        "--jamming",
+        action="store_true",
+        help="Enable adversarial jamming overlay (baseline scenario scaled to MxN)",
+    )
     args = parser.parse_args()
 
     out_dir = os.path.abspath(args.out_dir)
@@ -403,6 +413,10 @@ def main() -> int:
     seeds = [args.base_seed + i for i in range(args.num_seeds)]
     candle_n = min(args.candlestick_seeds, args.num_seeds)
     bounded_k = args.bounded_k_max if candle_n > 0 else None
+
+    jamming_scenario = baseline_for_grid(args.M, args.N) if args.jamming else None
+    if jamming_scenario is not None:
+        print(f"Jamming overlay ENABLED (scaled baseline for {args.M}x{args.N})")
 
     rows: list[dict[str, Any]] = []
     for i, seed in enumerate(seeds):
@@ -416,6 +430,7 @@ def main() -> int:
             workspace=workspace,
             keep_prism=args.keep_prism,
             bounded_k_max=args.bounded_k_max if use_bounded else None,
+            jamming=jamming_scenario,
         )
         rows.append(row)
         if row["error"]:

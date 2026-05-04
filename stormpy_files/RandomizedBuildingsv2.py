@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import os
 
+from jamming_overlay import emit_jamming_block, patch_base_for_jamming
+
 
 def make_building(M, N, x, y, w, h):
     return {
@@ -103,9 +105,22 @@ def generate_city_with_hospital(M, N, num_buildings, seed=None):
 
 
 
-def generate_random_prism(M: int = 5, N: int = 6, num_obstacles: int = 3, seed=None):
+def generate_random_prism(M: int = 5, N: int = 6, num_obstacles: int = 3, seed=None,
+                          jamming=None, include_manual_policy: bool = True):
     """
-    Generates a PRISM file with randomly placed obstacles and goal.
+    Generates a PRISM file with randomly placed buildings, a multi-cell
+    hospital goal, and a far-from-goal start position.
+
+    Args:
+        jamming: None (default) emits the plain base model. A scenario dict
+            (see jamming_overlay.JammingScenario) composes the adversarial
+            jamming overlay synchronized on all four movement actions.
+        include_manual_policy: If True (default) emits the existing hardcoded
+            `module policy` block, preserving backward-compatible behavior.
+            Set False when generating models for optimal-policy synthesis
+            (e.g. demo_jamming.py), since the manual policy restricts the
+            drone's actions and would dominate the synthesized scheduler.
+
     Returns the file path of the generated model.
     """
     if seed is not None:
@@ -188,12 +203,30 @@ endmodule
 label "crashed" = crashed;
 label "goal" = goal;
 """
-    
-    # Save to the current working directory
-    filename = f"uav_random_seed_{seed}.prism"
+
+    if not include_manual_policy:
+        # Strip the hardcoded `module policy` block so the synthesized
+        # scheduler is unconstrained by it.
+        start = prism_template.find("module policy")
+        end = prism_template.find("endmodule", start)
+        if start != -1 and end != -1:
+            end += len("endmodule")
+            prism_template = (
+                prism_template[:start].rstrip() + "\n\n" + prism_template[end:].lstrip()
+            )
+
+    if jamming is not None:
+        prism_template = patch_base_for_jamming(prism_template)
+        # Env in this generator declares all four movement actions.
+        prism_template += "\n" + emit_jamming_block(
+            jamming, move_actions=("up", "down", "left", "right")
+        )
+
+    suffix = "_jam" if jamming is not None else ""
+    filename = f"uav_random_seed_{seed}{suffix}.prism"
     with open(filename, "w", encoding="utf-8") as f:
         f.write(prism_template)
-        
+
     return filename
 
 

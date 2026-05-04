@@ -4,11 +4,18 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import os
 
-def generate_random_prism(M=5, N=6, num_obstacles=3, seed=None):
+from jamming_overlay import emit_jamming_block, patch_base_for_jamming
+
+
+def generate_random_prism(M=5, N=6, num_obstacles=3, seed=None, jamming=None):
     """
     Generates a PRISM file with randomly placed obstacles and goal.
     Does NOT include a manual policy, leaving it open for synthesis.
     Returns the file path of the generated model.
+
+    If `jamming` is None (default), emits the plain base model. If a
+    scenario dict (see jamming_overlay.JammingScenario), composes the
+    adversarial jamming overlay synchronized on the four movement actions.
     """
     if seed is not None:
         random.seed(seed)
@@ -68,10 +75,19 @@ label "crashed" = crashed;
 label "goal" = goal;
 """
     
-    filename = f"uav_env_{seed}.prism"
+    if jamming is not None:
+        prism_template = patch_base_for_jamming(prism_template)
+        # This generator's env declares all four movement actions, so the
+        # overlay must synchronize on all four.
+        prism_template += "\n" + emit_jamming_block(
+            jamming, move_actions=("up", "down", "left", "right")
+        )
+
+    suffix = "_jam" if jamming is not None else ""
+    filename = f"uav_env_{seed}{suffix}.prism"
     with open(filename, "w", encoding="utf-8") as f:
         f.write(prism_template)
-        
+
     return filename
 
 
