@@ -565,6 +565,6 @@ def synthesize_and_visualize(prism_filepath, organ_assignments=None, organ_types
 
 
 if __name__ == "__main__":
-	prism_file, organs, organ_types = generate_random_prism(M=30, N=30, num_obstacles=30, seed=6477)
+	prism_file, organs, organ_types = generate_random_prism(M=15, N=15, num_obstacles=30, seed=2222)
 	print(f"Generated: {prism_file}")
 	synthesize_and_visualize(prism_file, organ_assignments=organs, organ_types=organ_types)
