@@ -113,7 +113,7 @@ def _bounded_robust_synthesize(model, horizon: int):
             chosen[sid] = best_i
         prev = curr
 
-    return prev[model.initial_states[0]], chosen
+    return prev[model.initial_states[0]], chosen, prev
 
 
 def synthesize(prism_path: str, horizon: int | None = None):
@@ -133,7 +133,7 @@ def synthesize(prism_path: str, horizon: int | None = None):
     model = stormpy.build_sparse_interval_model_with_options(program, options)
 
     if horizon is not None:
-        pmax, chosen = _bounded_robust_synthesize(model, horizon)
+        pmax, chosen, state_values = _bounded_robust_synthesize(model, horizon)
         scheduler = None  # bounded path uses chosen-dict directly
     else:
         properties = stormpy.parse_properties(
@@ -145,6 +145,7 @@ def synthesize(prism_path: str, horizon: int | None = None):
         pmax = result.at(model.initial_states[0])
         scheduler = result.scheduler
         chosen = None
+        state_values = {s.id: result.at(s.id) for s in model.states}
 
     x_var = next(v for v in program.variables if v.name == "x")
     y_var = next(v for v in program.variables if v.name == "y")
@@ -157,6 +158,7 @@ def synthesize(prism_path: str, horizon: int | None = None):
         "scheduler": scheduler,    # None when horizon is set
         "chosen": chosen,           # state.id -> local action index, or None
         "pmax": pmax,
+        "state_values": state_values,  # state.id -> Pmax at that state
         "x": x_var,
         "y": y_var,
         "jcrashed": jcrashed_var,
@@ -184,12 +186,14 @@ def _extract_layout(synth, M, N):
     model = synth["model"]
     sched = synth["scheduler"]
     chosen = synth["chosen"]
+    state_values = synth["state_values"]
     val = model.state_valuations
     labels = model.labeling
     x_var, y_var, jc_var = synth["x"], synth["y"], synth["jcrashed"]
 
     obstacles, goals, start_pos = set(), set(), None
     cell_action: dict[tuple[int, int], str] = {}
+    zero_value_eps = 1e-9
 
     for state in model.states:
         s_id = state.id
@@ -209,7 +213,16 @@ def _extract_layout(synth, M, N):
 
         if sched is not None:
             choice = sched.get_choice(state)
-            local_idx = choice.get_deterministic_choice() if choice.defined else None
+            if choice.defined:
+                local_idx = choice.get_deterministic_choice()
+            elif state_values.get(s_id, 0.0) > zero_value_eps:
+                # Tie: scheduler considered all actions equivalent.
+                # Pick the first one so the cell still renders an arrow.
+                local_idx = 0
+            else:
+                # Pmax = 0 at this cell — genuinely no path to goal.
+                # Leave blank to communicate that visually.
+                local_idx = None
         else:
             local_idx = chosen.get(s_id) if chosen is not None else None
         if local_idx is not None:
