@@ -54,3 +54,12 @@ module policy
 // Labelling
 label "crashed" = crashed;
 label "goal" = goal;
+
+
+rewards "total_time"
+    true : 1;
+endrewards
+
+rewards "num_crashes"
+    [crashed] true : 1;
+endrewards

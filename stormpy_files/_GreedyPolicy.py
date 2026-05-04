@@ -125,29 +125,86 @@ def synthesize_and_visualize(prism_filepath):
 
     def action_name_from_choice(state, local_choice_index):
         """Resolve action label for the scheduler's local choice index."""
-        choice_labeling = model.choice_labeling
-        if choice_labeling is None:
+        actions = list(state.actions)
+        if local_choice_index < 0 or local_choice_index >= len(actions):
             return None
 
-        # Scheduler choices are local to the state. Translate to global choice id when possible.
-        global_choice_index = local_choice_index
-        try:
-            global_choice_index = state.actions[local_choice_index].id
-        except Exception:
-            pass
-
-        for label in choice_labeling.get_labels():
-            choices = choice_labeling.get_choices(label)
-            if choices.get(global_choice_index):
-                return label
-
-        # Fallback: try local index directly in case the model uses that indexing convention.
-        for label in choice_labeling.get_labels():
-            choices = choice_labeling.get_choices(label)
-            if choices.get(local_choice_index):
-                return label
+        selected_action = actions[local_choice_index]
+        if hasattr(selected_action, "labels"):
+            action_labels = list(selected_action.labels)
+            if action_labels:
+                return action_labels[0]
 
         return None
+
+    # Compute greedy no-oscillation guidance policy
+    print("Computing greedy no-oscillation guidance policy...")
+    from collections import deque
+    
+    # BFS to compute distance to goal from all coordinates
+    coord_to_state = {}
+    state_to_coord = {}
+    for state in model.states:
+        s_id = state.id
+        xy = (int(val.get_value(s_id, x_var)), int(val.get_value(s_id, y_var)))
+        coord_to_state[xy] = state
+        state_to_coord[s_id] = xy
+    
+    dist_to_goal = {coord: float('inf') for coord in coord_to_state}
+    dist_to_goal[goal_pos] = 0
+    queue = deque([goal_pos])
+    while queue:
+        x, y = queue.popleft()
+        for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+            nx, ny = x + dx, y + dy
+            if (nx, ny) in coord_to_state and dist_to_goal[(nx, ny)] == float('inf'):
+                dist_to_goal[(nx, ny)] = dist_to_goal[(x, y)] + 1
+                queue.append((nx, ny))
+    
+    # Greedy policy: prefer actions that reduce distance to goal
+    greedy_policy = {}
+    for state in model.states:
+        s_id = state.id
+        x, y = state_to_coord[s_id]
+        state_labels = labels.get_labels_of_state(s_id)
+        
+        if "crashed" in state_labels or "goal" in state_labels:
+            greedy_policy[s_id] = None
+            continue
+        
+        # Find which actions reduce distance
+        current_dist = dist_to_goal[(x, y)]
+        best_action = None
+        best_dist = current_dist
+        
+        actions = list(state.actions)
+        for action_idx, action in enumerate(actions):
+            action_labels = list(action.labels) if hasattr(action, "labels") else []
+            if not action_labels:
+                continue
+            action_name = action_labels[0]
+            
+            # Get successor coordinates
+            succs = set()
+            for tr in action.transitions:
+                t_coord = state_to_coord[tr.column]
+                succs.add(t_coord)
+            
+            # Prefer action if any successor is closer to goal
+            min_succ_dist = min((dist_to_goal[sc] for sc in succs), default=float('inf'))
+            if min_succ_dist < best_dist:
+                best_dist = min_succ_dist
+                best_action = (action_idx, action_name)
+        
+        # If no forward move found, use first available action
+        if best_action is None and actions:
+            for action_idx, action in enumerate(actions):
+                action_labels = list(action.labels) if hasattr(action, "labels") else []
+                if action_labels:
+                    best_action = (action_idx, action_labels[0])
+                    break
+        
+        greedy_policy[s_id] = best_action
 
     # Draw the Base Map
     _, ax = plt.subplots(figsize=(6, 7))
@@ -165,8 +222,8 @@ def synthesize_and_visualize(prism_filepath):
         ax.plot(start_pos[0] - 0.5, start_pos[1] - 0.5, marker='o', 
                 markersize=20, color="#212121", zorder=3, alpha=0.3)
 
-    # Overlay Policy Arrows
-    print("Overlaying synthesized policy vectors onto the map...")
+    # Overlay Policy Arrows (using greedy no-oscillation guidance)
+    print("Overlaying greedy guidance policy arrows onto the map...")
     action_counts = {"up": 0, "down": 0, "left": 0, "right": 0}
     for state in model.states:
         s_id = state.id
@@ -177,10 +234,9 @@ def synthesize_and_visualize(prism_filepath):
         if "crashed" in state_labels or "goal" in state_labels:
             continue
 
-        choice = scheduler.get_choice(state)
-        if choice.defined:
-            action_index = choice.get_deterministic_choice()
-            action_name = action_name_from_choice(state, action_index)
+        greedy_choice = greedy_policy.get(s_id)
+        if greedy_choice is not None:
+            action_idx, action_name = greedy_choice
             if action_name in action_counts:
                 action_counts[action_name] += 1
             
@@ -199,7 +255,7 @@ def synthesize_and_visualize(prism_filepath):
                          fc='#1f77b4', ec='#1f77b4', 
                          length_includes_head=True, zorder=4)
 
-    print(f"Selected actions in synthesized policy: {action_counts}")
+    print(f"Selected actions in greedy guidance policy: {action_counts}")
 
     # Set graphical limits and ticks
     ax.set_xlim(0, max_x)

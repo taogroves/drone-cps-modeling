@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import os
 
-def generate_random_prism(M=5, N=6, num_obstacles=3, seed=None):
+def generate_random_prism(M: int = 5, N: int = 6, num_obstacles: int = 3, seed=None):
     """
     Generates a PRISM file with randomly placed obstacles and goal.
     Does NOT include a manual policy, leaving it open for synthesis.
@@ -12,15 +12,12 @@ def generate_random_prism(M=5, N=6, num_obstacles=3, seed=None):
     """
     if seed is not None:
         random.seed(seed)
-        
     all_coords = [(x, y) for x in range(1, M + 1) for y in range(1, N + 1)]
     all_coords.remove((1, 1)) # Prevent spawning on the drone's start location
-    
     # Sample unique coordinates for the goal and obstacles
     sampled = random.sample(all_coords, 1 + num_obstacles)
     goal_pos = sampled[0]
-    obstacle_positions = sampled[1:]
-    
+    obstacle_positions = sampled[1:]  
     # Format the PRISM formulas dynamically
     goal_formula = f"formula goal = x = {goal_pos[0]} & y = {goal_pos[1]};"
     obs_strings = [f"(x = {ox} & y = {oy})" for ox, oy in obstacle_positions]
@@ -82,7 +79,7 @@ def synthesize_and_visualize(prism_filepath):
     # Configure builder to retain variable coordinates and action names
     options = stormpy.BuilderOptions()
     options.set_build_state_valuations()
-    options.set_build_choice_labels() 
+    options.set_build_choice_labels()
     
     print("Building interval MDP state space...")
     model = stormpy.build_sparse_interval_model_with_options(prism_program, options)
@@ -347,7 +344,7 @@ def compute_bounded_safety_curve(prism_filepath, max_k=30):
     return curve
 
 
-def plot_bounded_reachability(prism_filepath, max_k=30):
+def plot_bounded_reachability(prism_filepath, max_k=50):
     """
     Parses the PRISM file, iteratively checks bounded properties for K in [0, max_k],
     and plots the probabilities as a line graph.
@@ -478,6 +475,7 @@ def plot_global_safety(prism_filepath, max_iters=200, tol=1e-8):
 if __name__ == "__main__":
     # Generate a random seed
     my_seed = random.randint(1000, 9999)
+    # my_seed = 9035 # (Example)
     print(f"--- Starting Pipeline for Seed {my_seed} ---")
     
     # Generate the dynamic PRISM file
@@ -487,7 +485,7 @@ if __name__ == "__main__":
     # synthesize_and_visualize(new_prism_file)
     
     # Add the new bounded reachability graph
-    plot_bounded_reachability(new_prism_file, max_k=30)
+    plot_bounded_reachability(new_prism_file, max_k=50)
 
     # Add separate graph for global safety property
     plot_global_safety(new_prism_file)
