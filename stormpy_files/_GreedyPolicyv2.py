@@ -435,7 +435,6 @@ def synthesize_and_visualize(prism_filepath):
 
 if __name__ == "__main__":
 	my_seed = random.randint(1000, 9999)
-	my_seed = 1234 # for consistent testing
 	print(f"Generating environment with seed: {my_seed}...")
 
 	M, N = 12, 12
