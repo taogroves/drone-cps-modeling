@@ -82,7 +82,27 @@ def generate_city_with_hospital(M, N, num_buildings, seed=None):
 		place_building()
 
 	building_cells = set().union(*buildings) if buildings else set()
-	hospital_cells = hospital if hospital is not None else set()
+	if hospital is None:
+		fallback_cells = [
+			(x, y)
+			for x in range(1, M + 1)
+			for y in range(1, N + 1)
+			if (x, y) not in building_cells
+		]
+		if not fallback_cells:
+			raise ValueError("Could not place any hospital cell on the grid")
+		center_x, center_y = (M + 1) / 2, (N + 1) / 2
+		hospital = {
+			min(
+				fallback_cells,
+				key=lambda cell: (
+					abs(cell[0] - center_x) + abs(cell[1] - center_y),
+					cell[0],
+					cell[1],
+				),
+			)
+		}
+	hospital_cells = hospital
 
 	all_cells = {
 		(x, y)
@@ -565,6 +585,6 @@ def synthesize_and_visualize(prism_filepath, organ_assignments=None, organ_types
 
 
 if __name__ == "__main__":
-	prism_file, organs, organ_types = generate_random_prism(M=15, N=15, num_obstacles=30, seed=2222)
+	prism_file, organs, organ_types = generate_random_prism(M=10, N=10, num_obstacles=30, seed=2222)
 	print(f"Generated: {prism_file}")
 	synthesize_and_visualize(prism_file, organ_assignments=organs, organ_types=organ_types)
