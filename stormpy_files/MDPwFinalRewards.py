@@ -341,10 +341,22 @@ def synthesize_and_visualize(prism_filepath, organ_assignments=None, organ_types
 	if not goal_positions:
 		raise ValueError("No goal states were found in the generated model")
 
+	state_labels_by_id = {
+		state.id: labels.get_labels_of_state(state.id)
+		for state in model.states
+	}
+
+	choice_index_to_label = {}
+	choice_labeling = model.choice_labeling
+	if choice_labeling is not None:
+		for label in choice_labeling.get_labels():
+			choices = choice_labeling.get_choices(label)
+			for choice_index in choices:
+				choice_index_to_label.setdefault(choice_index, label)
+
 	def action_name_from_choice(state, local_choice_index):
 		"""Resolve action label for the scheduler's local choice index."""
-		choice_labeling = model.choice_labeling
-		if choice_labeling is None:
+		if not choice_index_to_label:
 			return None
 
 		global_choice_index = local_choice_index
@@ -353,17 +365,7 @@ def synthesize_and_visualize(prism_filepath, organ_assignments=None, organ_types
 		except Exception:
 			pass
 
-		for label in choice_labeling.get_labels():
-			choices = choice_labeling.get_choices(label)
-			if choices.get(global_choice_index):
-				return label
-
-		for label in choice_labeling.get_labels():
-			choices = choice_labeling.get_choices(label)
-			if choices.get(local_choice_index):
-				return label
-
-		return None
+		return choice_index_to_label.get(global_choice_index) or choice_index_to_label.get(local_choice_index)
 
 	_, ax = plt.subplots(figsize=(10, 10))
 	for x in range(1, max_x + 1):
@@ -518,10 +520,14 @@ def synthesize_and_visualize(prism_filepath, organ_assignments=None, organ_types
 
 	print("Overlaying policy vectors onto the map...")
 	action_counts = {"up": 0, "down": 0, "left": 0, "right": 0}
+	arrow_x = []
+	arrow_y = []
+	arrow_dx = []
+	arrow_dy = []
 	for state in model.states:
 		s_id = state.id
 		x, y = int(val.get_value(s_id, x_var)), int(val.get_value(s_id, y_var))
-		state_labels = labels.get_labels_of_state(s_id)
+		state_labels = state_labels_by_id[s_id]
 
 		if "crashed" in state_labels or "goal" in state_labels:
 			continue
@@ -553,18 +559,24 @@ def synthesize_and_visualize(prism_filepath, organ_assignments=None, organ_types
 				dx = -arrow_length
 
 			if dx != 0 or dy != 0:
-				ax.arrow(
-					x - 0.5,
-					y - 0.5,
-					dx,
-					dy,
-					head_width=0.15,
-					head_length=0.15,
-					fc="#1f77b4",
-					ec="#1f77b4",
-					length_includes_head=True,
-					zorder=4,
-				)
+				arrow_x.append(x - 0.5)
+				arrow_y.append(y - 0.5)
+				arrow_dx.append(dx)
+				arrow_dy.append(dy)
+
+	if arrow_x:
+		ax.quiver(
+			arrow_x,
+			arrow_y,
+			arrow_dx,
+			arrow_dy,
+			angles="xy",
+			scale_units="xy",
+			scale=1,
+			width=0.004,
+			color="#1f77b4",
+			zorder=4,
+		)
 
 	print(f"Selected actions in synthesized policy: {action_counts}")
 
@@ -585,6 +597,6 @@ def synthesize_and_visualize(prism_filepath, organ_assignments=None, organ_types
 
 
 if __name__ == "__main__":
-	prism_file, organs, organ_types = generate_random_prism(M=10, N=10, num_obstacles=30, seed=2222)
+	prism_file, organs, organ_types = generate_random_prism(M=10, N=10, num_obstacles=30, seed=3621)
 	print(f"Generated: {prism_file}")
 	synthesize_and_visualize(prism_file, organ_assignments=organs, organ_types=organ_types)
