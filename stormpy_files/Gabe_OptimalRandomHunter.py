@@ -327,7 +327,7 @@ def synthesize_and_visualize(prism_filepath):
 	ax.set_ylim(0, max_y)
 	ax.set_xticks(range(max_x + 1))
 	ax.set_yticks(range(max_y + 1))
-	ax.set_xticklabels([str(i) for i in range(]1, max_x + 2)])
+	ax.set_xticklabels([str(i) for i in range(1, max_x + 2)])
 	ax.set_yticklabels([str(i) for i in range(1, max_y + 2)])
 	ax.grid(False)
 	ax.set_aspect("equal")
