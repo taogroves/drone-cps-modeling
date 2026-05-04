@@ -1,5 +1,6 @@
 import os
 import random
+from collections import deque
 
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
@@ -189,15 +190,26 @@ def synthesize_and_visualize(prism_filepath):
 	print("Building interval MDP state space...")
 	model = stormpy.build_sparse_interval_model_with_options(prism_program, options)
 
-	print('Synthesizing optimal policy (Pmax=? [ !"crashed" U "goal" ])...')
+	print('Attempting to synthesize optimal policy (Pmax=? [ !"crashed" U "goal" ])...')
 	formula_str = 'Pmax=? [ !"crashed" U "goal" ]'
 	properties = stormpy.parse_properties(formula_str, prism_program)
 	task = stormpy.CheckTask(properties[0].raw_formula)
 	task.set_produce_schedulers(True)
 	task.set_uncertainty_resolution_mode(stormpy.UncertaintyResolutionMode.ROBUST)
 
-	result = stormpy.check_interval_mdp(model, task, stormpy.Environment())
-	scheduler = result.scheduler
+	scheduler = None
+	use_greedy_fallback = False
+	try:
+		result = stormpy.check_interval_mdp(model, task, stormpy.Environment())
+		scheduler = result.scheduler
+		print('Optimal synthesis succeeded.')
+	except RuntimeError as e:
+		if "end component" in str(e).lower():
+			print(f'WARNING: Optimal synthesis failed with end component error: {e}')
+			print('Falling back to greedy BFS policy...')
+			use_greedy_fallback = True
+		else:
+			raise
 
 	labels = model.labeling
 	val = model.state_valuations
@@ -279,7 +291,109 @@ def synthesize_and_visualize(prism_filepath):
 			alpha=0.3,
 		)
 
-	print("Overlaying synthesized optimal policy vectors onto the map...")
+	if use_greedy_fallback:
+		print("Computing greedy BFS guidance policy with improved tie-breaking...")
+		coord_to_state = {}
+		state_to_coord = {}
+		for state in model.states:
+			s_id = state.id
+			xy = (int(val.get_value(s_id, x_var)), int(val.get_value(s_id, y_var)))
+			coord_to_state[xy] = state
+			state_to_coord[s_id] = xy
+
+		dist_to_goal = {coord: float("inf") for coord in coord_to_state}
+		queue = deque()
+		for goal in goal_positions:
+			if goal in dist_to_goal:
+				dist_to_goal[goal] = 0
+				queue.append(goal)
+
+		while queue:
+			x, y = queue.popleft()
+			for dx, dy in ((0, 1), (0, -1), (1, 0), (-1, 0)):
+				nx, ny = x + dx, y + dy
+				if (nx, ny) in coord_to_state and dist_to_goal[(nx, ny)] == float("inf"):
+					dist_to_goal[(nx, ny)] = dist_to_goal[(x, y)] + 1
+					queue.append((nx, ny))
+
+		def nearest_goal(coord):
+			return min(goal_positions, key=lambda goal: (abs(goal[0] - coord[0]) + abs(goal[1] - coord[1]), goal[0], goal[1]))
+
+		greedy_policy = {}
+		for state in model.states:
+			s_id = state.id
+			x, y = state_to_coord[s_id]
+			state_labels = labels.get_labels_of_state(s_id)
+
+			if "crashed" in state_labels or "goal" in state_labels:
+				greedy_policy[s_id] = None
+				continue
+
+			current_dist = dist_to_goal[(x, y)]
+			goal_x, goal_y = nearest_goal((x, y))
+			delta_x = goal_x - x
+			delta_y = goal_y - y
+			preferred_axis = "x" if abs(delta_x) >= abs(delta_y) else "y"
+			best_action = None
+			best_score = (current_dist, 2, 2)
+
+			for action_idx, action in enumerate(list(state.actions)):
+				action_labels = list(action.labels) if hasattr(action, "labels") else []
+				if not action_labels:
+					continue
+
+				action_name = action_labels[0]
+				axis_penalty = 2
+				if action_name == "left":
+					action_axis = "x"
+					action_delta = -1
+				elif action_name == "right":
+					action_axis = "x"
+					action_delta = 1
+				elif action_name == "down":
+					action_axis = "y"
+					action_delta = -1
+				elif action_name == "up":
+					action_axis = "y"
+					action_delta = 1
+				else:
+					action_axis = None
+					action_delta = 0
+
+				if action_axis == preferred_axis:
+					if action_axis == "x" and ((delta_x > 0 and action_delta > 0) or (delta_x < 0 and action_delta < 0)):
+						axis_penalty = 0
+					elif action_axis == "y" and ((delta_y > 0 and action_delta > 0) or (delta_y < 0 and action_delta < 0)):
+						axis_penalty = 0
+					else:
+						axis_penalty = 1
+				elif action_axis is not None:
+					if action_axis == "x" and ((delta_x > 0 and action_delta > 0) or (delta_x < 0 and action_delta < 0)):
+						axis_penalty = 1
+					elif action_axis == "y" and ((delta_y > 0 and action_delta > 0) or (delta_y < 0 and action_delta < 0)):
+						axis_penalty = 1
+
+				successor_coords = {state_to_coord[t.column] for t in action.transitions}
+				min_successor_dist = min(
+					(dist_to_goal[s] for s in successor_coords),
+					default=float("inf"),
+				)
+
+				candidate_score = (min_successor_dist, axis_penalty, 0 if action_axis == preferred_axis else 1)
+				if candidate_score < best_score:
+					best_score = candidate_score
+					best_action = (action_idx, action_name)
+
+			if best_action is None:
+				for action_idx, action in enumerate(list(state.actions)):
+					action_labels = list(action.labels) if hasattr(action, "labels") else []
+					if action_labels:
+						best_action = (action_idx, action_labels[0])
+						break
+
+			greedy_policy[s_id] = best_action
+
+	print("Overlaying policy vectors onto the map...")
 	action_counts = {"up": 0, "down": 0, "left": 0, "right": 0}
 	for state in model.states:
 		s_id = state.id
@@ -289,13 +403,21 @@ def synthesize_and_visualize(prism_filepath):
 		if "crashed" in state_labels or "goal" in state_labels:
 			continue
 
-		choice = scheduler.get_choice(state)
-		if choice.defined:
-			action_index = choice.get_deterministic_choice()
-			action_name = action_name_from_choice(state, action_index)
-			if action_name in action_counts:
-				action_counts[action_name] += 1
+		action_name = None
+		if use_greedy_fallback:
+			greedy_choice = greedy_policy.get(s_id)
+			if greedy_choice is not None:
+				_, action_name = greedy_choice
+		else:
+			choice = scheduler.get_choice(state)
+			if choice.defined:
+				action_index = choice.get_deterministic_choice()
+				action_name = action_name_from_choice(state, action_index)
 
+		if action_name and action_name in action_counts:
+			action_counts[action_name] += 1
+
+		if action_name:
 			dx, dy = 0, 0
 			arrow_length = 0.35
 			if action_name == "up":
@@ -323,6 +445,7 @@ def synthesize_and_visualize(prism_filepath):
 
 	print(f"Selected actions in synthesized policy: {action_counts}")
 
+	policy_type = "Greedy BFS" if use_greedy_fallback else "Optimal Synthesis"
 	ax.set_xlim(0, max_x)
 	ax.set_ylim(0, max_y)
 	ax.set_xticks(range(max_x + 1))
@@ -331,7 +454,7 @@ def synthesize_and_visualize(prism_filepath):
 	ax.set_yticklabels([str(i) for i in range(1, max_y + 2)])
 	ax.grid(False)
 	ax.set_aspect("equal")
-	plt.title(f"Synthesized UAV Policy (Seed: {os.path.basename(prism_filepath).split('_')[-1].split('.')[0]})")
+	plt.title(f"{policy_type} UAV Policy (Seed: {os.path.basename(prism_filepath).split('_')[-1].split('.')[0]})")
 	plt.show()
 	plt.savefig("output.png")
 	plt.close()
@@ -341,7 +464,7 @@ if __name__ == "__main__":
 	my_seed = random.randint(1000, 9999)
 	print(f"Generating environment with seed: {my_seed}...")
 
-	M, N = 30, 30
+	M, N = 15, 15
 	new_prism_file = generate_random_prism(M=M, N=N, num_obstacles=30, seed=my_seed)
 	print(f"Successfully saved to: {new_prism_file}")
 
