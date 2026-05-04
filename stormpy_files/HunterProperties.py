@@ -79,7 +79,7 @@ def synthesize_and_visualize(prism_filepath):
     # Configure builder to retain variable coordinates and action names
     options = stormpy.BuilderOptions()
     options.set_build_state_valuations()
-    options.set_build_choice_labels() 
+    options.set_build_choice_labels()
     
     print("Building interval MDP state space...")
     model = stormpy.build_sparse_interval_model_with_options(prism_program, options)
