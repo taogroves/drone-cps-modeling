@@ -245,7 +245,7 @@ def synthesize_and_visualize(prism_filepath):
 		x, y = queue.popleft()
 		for dx, dy in ((0, 1), (0, -1), (1, 0), (-1, 0)):
 			nx, ny = x + dx, y + dy
-			if (nx, ny) in coord_to_state and dist_to_goal[(nx, ny)] == float("inf"):
+			if (nx, ny) in coord_to_state and (nx, ny) not in obstacles and dist_to_goal[(nx, ny)] == float("inf"):
 				dist_to_goal[(nx, ny)] = dist_to_goal[(x, y)] + 1
 				queue.append((nx, ny))
 
@@ -323,10 +323,19 @@ def synthesize_and_visualize(prism_filepath):
 			for transition in action.transitions:
 				successor_coords.add(state_to_coord[transition.column])
 
-			min_successor_dist = min(
-				(dist_to_goal[successor] for successor in successor_coords),
-				default=float("inf"),
-			)
+			# For a greedy choice, we want to look at the expected behavior or Intended behavior.
+			# Let's consider the intended next state for distance computation (greedy)
+			nx, ny = x, y
+			if action_name == "up":
+				nx, ny = x, min(y+1, max_y)
+			elif action_name == "down":
+				nx, ny = x, max(y-1, 1)
+			elif action_name == "right":
+				nx, ny = min(x+1, max_x), y
+			elif action_name == "left":
+				nx, ny = max(x-1, 1), y
+
+			min_successor_dist = dist_to_goal.get((nx, ny), float("inf"))
 
 			candidate_score = (min_successor_dist, axis_penalty, 0 if action_axis == preferred_axis else 1)
 			if candidate_score < best_score:
@@ -435,7 +444,6 @@ def synthesize_and_visualize(prism_filepath):
 
 if __name__ == "__main__":
 	my_seed = random.randint(1000, 9999)
-	my_seed = 6443
 	print(f"Generating environment with seed: {my_seed}...")
 
 	M, N = 12, 12
