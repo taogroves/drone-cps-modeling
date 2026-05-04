@@ -185,21 +185,18 @@ def synthesize_and_visualize(prism_filepath):
     plt.show()
 
 
-def plot_bounded_reachability(prism_filepath, max_k=30):
+def compute_bounded_reachability_curve(prism_filepath, max_k=30):
     """
-    Parses the PRISM file, iteratively checks bounded properties for K in [0, max_k],
-    and plots the probabilities as a line graph.
+    Interval MDP from the standard PRISM file (no horizon augmentation).
+    Robust value iteration for the same semantics as the primary curve in
+    plot_bounded_reachability (Pmax for !crashed U<=K goal style).
+
+    Returns list of length (max_k + 1): entry j is the value at the initial state
+    with step bound j (j = 0..max_k).
     """
-    print(f"Parsing model from: {prism_filepath} for bounded model checking...")
     prism_program = stormpy.parse_prism_program(prism_filepath)
-    
-    # Configure builder
     options = stormpy.BuilderOptions()
-    
-    print("Building interval MDP state space...")
     model = stormpy.build_sparse_interval_model_with_options(prism_program, options)
-    
-    # Get the initial state to query the final probability
     initial_state = model.initial_states[0]
 
     labels = model.labeling
@@ -213,7 +210,6 @@ def plot_bounded_reachability(prism_filepath, max_k=30):
             crashed_states.add(state.id)
 
     def robust_min_expected(action, previous_values):
-        """Minimize expected next-step value under interval probability bounds."""
         bounded = []
         lower_sum = 0.0
 
@@ -225,7 +221,6 @@ def plot_bounded_reachability(prism_filepath, max_k=30):
             bounded.append([previous_values[target], lower, upper])
             lower_sum += lower
 
-        # Start from all lower bounds and distribute leftover mass to the least-valued targets.
         expected = sum(value * lower for value, lower, _ in bounded)
         remaining = max(0.0, 1.0 - lower_sum)
 
@@ -238,12 +233,9 @@ def plot_bounded_reachability(prism_filepath, max_k=30):
             remaining -= add
 
         return expected
-    
-    k_values = list(range(max_k + 1))
+
     pmax_u_values = []
     pmax_f_values = []
-    
-    print(f"Checking bounded properties for K up to {max_k}...")
     prev_u = {}
     prev_f = {}
     for state in model.states:
@@ -283,6 +275,87 @@ def plot_bounded_reachability(prism_filepath, max_k=30):
         prev_f = curr_f
         pmax_u_values.append(prev_u[initial_state])
         pmax_f_values.append(prev_f[initial_state])
+
+    return pmax_u_values
+
+
+def compute_bounded_safety_curve(prism_filepath, max_k=30):
+    """
+    Finite-horizon prefixes of the same robust safety iteration as plot_global_safety
+    (maximize probability of never visiting 'crashed', Pmax=? [ G !"crashed" ]).
+
+    Returns list of length (max_k + 1): entry j is the value at the initial state
+    after j Bellman updates, j = 0..max_k (same indexing as compute_bounded_reachability_curve).
+    """
+    prism_program = stormpy.parse_prism_program(prism_filepath)
+    options = stormpy.BuilderOptions()
+    model = stormpy.build_sparse_interval_model_with_options(prism_program, options)
+    initial_state = model.initial_states[0]
+    labels = model.labeling
+    crashed_states = set()
+    for state in model.states:
+        if "crashed" in labels.get_labels_of_state(state.id):
+            crashed_states.add(state.id)
+
+    def robust_min_expected(action, previous_values):
+        bounded = []
+        lower_sum = 0.0
+
+        for transition in action.transitions:
+            interval = transition.value()
+            lower = float(interval.lower())
+            upper = float(interval.upper())
+            target = transition.column
+            bounded.append([previous_values[target], lower, upper])
+            lower_sum += lower
+
+        expected = sum(value * lower for value, lower, _ in bounded)
+        remaining = max(0.0, 1.0 - lower_sum)
+
+        bounded.sort(key=lambda x: x[0])
+        for value, lower, upper in bounded:
+            if remaining <= 0.0:
+                break
+            add = min(upper - lower, remaining)
+            expected += value * add
+            remaining -= add
+
+        return expected
+
+    values = {}
+    for state in model.states:
+        values[state.id] = 0.0 if state.id in crashed_states else 1.0
+
+    curve = [values[initial_state]]
+
+    for _ in range(max_k):
+        next_values = {}
+        for state in model.states:
+            s_id = state.id
+            if s_id in crashed_states:
+                next_values[s_id] = 0.0
+                continue
+            if len(state.actions) == 0:
+                next_values[s_id] = 0.0
+                continue
+            next_values[s_id] = max(
+                robust_min_expected(action, values) for action in state.actions
+            )
+        values = next_values
+        curve.append(values[initial_state])
+
+    return curve
+
+
+def plot_bounded_reachability(prism_filepath, max_k=30):
+    """
+    Parses the PRISM file, iteratively checks bounded properties for K in [0, max_k],
+    and plots the probabilities as a line graph.
+    """
+    print(f"Parsing model from: {prism_filepath} for bounded model checking...")
+    print(f"Checking bounded properties for K up to {max_k}...")
+    pmax_u_values = compute_bounded_reachability_curve(prism_filepath, max_k)
+    k_values = list(range(len(pmax_u_values)))
         
     # --- Plotting the Results ---
     print("Plotting results...")
