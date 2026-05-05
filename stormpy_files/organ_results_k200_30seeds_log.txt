@@ -1,0 +1,399 @@
+[1/30] seed=0 ...
+    organ=Heart        jam=0  avoid=0.1210  reach=0.1210  safe=0.7367
+    organ=Lungs        jam=0  avoid=0.1393  reach=0.1393  safe=0.7367
+    organ=Liver        jam=0  avoid=0.6430  reach=0.6430  safe=0.7367
+    organ=Intestines   jam=0  avoid=0.6430  reach=0.6430  safe=0.7367
+    organ=Pancreas     jam=0  avoid=0.6430  reach=0.6430  safe=0.7367
+    organ=Kidneys      jam=0  avoid=0.1351  reach=0.1351  safe=0.7367
+    organ=Heart        jam=1  avoid=0.0363  reach=0.0363  safe=0.5046
+    organ=Lungs        jam=1  avoid=0.0553  reach=0.0553  safe=0.5046
+    organ=Liver        jam=1  avoid=0.0562  reach=0.0562  safe=0.5046
+    organ=Intestines   jam=1  avoid=0.0331  reach=0.0331  safe=0.5046
+    organ=Pancreas     jam=1  avoid=0.0528  reach=0.0528  safe=0.5046
+    organ=Kidneys      jam=1  avoid=0.0551  reach=0.0551  safe=0.5046
+[2/30] seed=1 ...
+    organ=Heart        jam=0  avoid=0.1701  reach=0.1701  safe=0.7292
+    organ=Lungs        jam=0  avoid=0.0692  reach=0.0692  safe=0.7292
+    organ=Liver        jam=0  avoid=0.1695  reach=0.1695  safe=0.7292
+    organ=Intestines   jam=0  avoid=0.1580  reach=0.1580  safe=0.7292
+    organ=Pancreas     jam=0  avoid=0.1677  reach=0.1677  safe=0.7292
+    organ=Kidneys      jam=0  avoid=0.1710  reach=0.1710  safe=0.7292
+    organ=Heart        jam=1  avoid=0.0770  reach=0.0770  safe=0.5122
+    organ=Lungs        jam=1  avoid=0.0313  reach=0.0313  safe=0.5122
+    organ=Liver        jam=1  avoid=0.0858  reach=0.0858  safe=0.5122
+    organ=Intestines   jam=1  avoid=0.0733  reach=0.0733  safe=0.5122
+    organ=Pancreas     jam=1  avoid=0.0889  reach=0.0889  safe=0.5122
+    organ=Kidneys      jam=1  avoid=0.0948  reach=0.0948  safe=0.5122
+[3/30] seed=2 ...
+    organ=Heart        jam=0  avoid=0.8636  reach=0.8636  safe=0.8636
+    organ=Lungs        jam=0  avoid=0.8636  reach=0.8636  safe=0.8636
+    organ=Liver        jam=0  avoid=0.8636  reach=0.8636  safe=0.8636
+    organ=Intestines   jam=0  avoid=0.8636  reach=0.8636  safe=0.8636
+    organ=Pancreas     jam=0  avoid=0.8636  reach=0.8636  safe=0.8636
+    organ=Kidneys      jam=0  avoid=0.8636  reach=0.8636  safe=0.8636
+    organ=Heart        jam=1  avoid=0.0529  reach=0.0529  safe=0.5423
+    organ=Lungs        jam=1  avoid=0.0488  reach=0.0488  safe=0.5423
+    organ=Liver        jam=1  avoid=0.0427  reach=0.0427  safe=0.5423
+    organ=Intestines   jam=1  avoid=0.0427  reach=0.0427  safe=0.5423
+    organ=Pancreas     jam=1  avoid=0.0374  reach=0.0374  safe=0.5423
+    organ=Kidneys      jam=1  avoid=0.0559  reach=0.0559  safe=0.5423
+[4/30] seed=3 ...
+    organ=Heart        jam=0  avoid=0.7418  reach=0.7418  safe=0.7418
+    organ=Lungs        jam=0  avoid=0.7418  reach=0.7418  safe=0.7418
+    organ=Liver        jam=0  avoid=0.7418  reach=0.7418  safe=0.7418
+    organ=Intestines   jam=0  avoid=0.7418  reach=0.7418  safe=0.7418
+    organ=Pancreas     jam=0  avoid=0.7418  reach=0.7418  safe=0.7418
+    organ=Kidneys      jam=0  avoid=0.7418  reach=0.7418  safe=0.7418
+    organ=Heart        jam=1  avoid=0.6502  reach=0.6502  safe=0.5224
+    organ=Lungs        jam=1  avoid=0.6769  reach=0.6769  safe=0.5224
+    organ=Liver        jam=1  avoid=0.7034  reach=0.7034  safe=0.5224
+    organ=Intestines   jam=1  avoid=0.7136  reach=0.7136  safe=0.5224
+    organ=Pancreas     jam=1  avoid=0.7173  reach=0.7173  safe=0.5224
+    organ=Kidneys      jam=1  avoid=0.6975  reach=0.6975  safe=0.5224
+[5/30] seed=4 ...
+    organ=Heart        jam=0  avoid=0.2119  reach=0.2119  safe=0.9939
+    organ=Lungs        jam=0  avoid=0.1965  reach=0.1965  safe=0.9939
+    organ=Liver        jam=0  avoid=0.1865  reach=0.1865  safe=0.9939
+    organ=Intestines   jam=0  avoid=0.2154  reach=0.2154  safe=0.9939
+    organ=Pancreas     jam=0  avoid=0.1698  reach=0.1698  safe=0.9939
+    organ=Kidneys      jam=0  avoid=0.1744  reach=0.1744  safe=0.9939
+    organ=Heart        jam=1  avoid=0.1226  reach=0.1226  safe=0.7039
+    organ=Lungs        jam=1  avoid=0.1151  reach=0.1151  safe=0.7039
+    organ=Liver        jam=1  avoid=0.0939  reach=0.0939  safe=0.7039
+    organ=Intestines   jam=1  avoid=0.1186  reach=0.1186  safe=0.7039
+    organ=Pancreas     jam=1  avoid=0.0789  reach=0.0789  safe=0.7039
+    organ=Kidneys      jam=1  avoid=0.0961  reach=0.0961  safe=0.7039
+[6/30] seed=5 ...
+    organ=Heart        jam=0  avoid=0.9353  reach=0.9353  safe=1.0000
+    organ=Lungs        jam=0  avoid=0.9353  reach=0.9353  safe=1.0000
+    organ=Liver        jam=0  avoid=0.9353  reach=0.9353  safe=1.0000
+    organ=Intestines   jam=0  avoid=0.9353  reach=0.9353  safe=1.0000
+    organ=Pancreas     jam=0  avoid=0.9353  reach=0.9353  safe=1.0000
+    organ=Kidneys      jam=0  avoid=0.9353  reach=0.9353  safe=1.0000
+    organ=Heart        jam=1  avoid=0.9082  reach=0.9082  safe=0.7071
+    organ=Lungs        jam=1  avoid=0.9083  reach=0.9083  safe=0.7071
+    organ=Liver        jam=1  avoid=0.8999  reach=0.8999  safe=0.7071
+    organ=Intestines   jam=1  avoid=0.9142  reach=0.9142  safe=0.7071
+    organ=Pancreas     jam=1  avoid=0.9113  reach=0.9113  safe=0.7071
+    organ=Kidneys      jam=1  avoid=0.9140  reach=0.9140  safe=0.7071
+[7/30] seed=6 ...
+    organ=Heart        jam=0  avoid=0.0399  reach=0.0399  safe=0.7186
+    organ=Lungs        jam=0  avoid=0.0622  reach=0.0622  safe=0.7186
+    organ=Liver        jam=0  avoid=0.0765  reach=0.0765  safe=0.7186
+    organ=Intestines   jam=0  avoid=0.0669  reach=0.0669  safe=0.7186
+    organ=Pancreas     jam=0  avoid=0.0751  reach=0.0751  safe=0.7186
+    organ=Kidneys      jam=0  avoid=0.0701  reach=0.0701  safe=0.7186
+    organ=Heart        jam=1  avoid=0.0198  reach=0.0198  safe=0.5028
+    organ=Lungs        jam=1  avoid=0.0268  reach=0.0268  safe=0.5028
+    organ=Liver        jam=1  avoid=0.0385  reach=0.0385  safe=0.5028
+    organ=Intestines   jam=1  avoid=0.0301  reach=0.0301  safe=0.5028
+    organ=Pancreas     jam=1  avoid=0.0331  reach=0.0331  safe=0.5028
+    organ=Kidneys      jam=1  avoid=0.0348  reach=0.0348  safe=0.5028
+[8/30] seed=7 ...
+    organ=Heart        jam=0  avoid=0.4111  reach=0.4111  safe=1.0000
+    organ=Lungs        jam=0  avoid=0.4111  reach=0.4111  safe=1.0000
+    organ=Liver        jam=0  avoid=0.4111  reach=0.4111  safe=1.0000
+    organ=Intestines   jam=0  avoid=0.4111  reach=0.4111  safe=1.0000
+    organ=Pancreas     jam=0  avoid=0.4111  reach=0.4111  safe=1.0000
+    organ=Kidneys      jam=0  avoid=0.4111  reach=0.4111  safe=1.0000
+    organ=Heart        jam=1  avoid=0.3455  reach=0.3455  safe=0.7062
+    organ=Lungs        jam=1  avoid=0.3649  reach=0.3649  safe=0.7062
+    organ=Liver        jam=1  avoid=0.3443  reach=0.3443  safe=0.7062
+    organ=Intestines   jam=1  avoid=0.3376  reach=0.3376  safe=0.7062
+    organ=Pancreas     jam=1  avoid=0.3630  reach=0.3630  safe=0.7062
+    organ=Kidneys      jam=1  avoid=0.3607  reach=0.3607  safe=0.7062
+[9/30] seed=8 ...
+    organ=Heart        jam=0  avoid=0.8372  reach=0.8372  safe=0.8372
+    organ=Lungs        jam=0  avoid=0.8372  reach=0.8372  safe=0.8372
+    organ=Liver        jam=0  avoid=0.8372  reach=0.8372  safe=0.8372
+    organ=Intestines   jam=0  avoid=0.8372  reach=0.8372  safe=0.8372
+    organ=Pancreas     jam=0  avoid=0.8372  reach=0.8372  safe=0.8372
+    organ=Kidneys      jam=0  avoid=0.8372  reach=0.8372  safe=0.8372
+    organ=Heart        jam=1  avoid=0.6620  reach=0.6620  safe=0.5802
+    organ=Lungs        jam=1  avoid=0.6022  reach=0.6022  safe=0.5802
+    organ=Liver        jam=1  avoid=0.3226  reach=0.3226  safe=0.5802
+    organ=Intestines   jam=1  avoid=0.5969  reach=0.5969  safe=0.5802
+    organ=Pancreas     jam=1  avoid=0.3796  reach=0.3796  safe=0.5802
+    organ=Kidneys      jam=1  avoid=0.5044  reach=0.5044  safe=0.5802
+[10/30] seed=9 ...
+    organ=Heart        jam=0  avoid=0.7143  reach=0.7143  safe=0.7143
+    organ=Lungs        jam=0  avoid=0.7143  reach=0.7143  safe=0.7143
+    organ=Liver        jam=0  avoid=0.7143  reach=0.7143  safe=0.7143
+    organ=Intestines   jam=0  avoid=0.7143  reach=0.7143  safe=0.7143
+    organ=Pancreas     jam=0  avoid=0.7143  reach=0.7143  safe=0.7143
+    organ=Kidneys      jam=0  avoid=0.7143  reach=0.7143  safe=0.7143
+    organ=Heart        jam=1  avoid=0.3270  reach=0.3270  safe=0.3671
+    organ=Lungs        jam=1  avoid=0.3024  reach=0.3024  safe=0.3671
+    organ=Liver        jam=1  avoid=0.2928  reach=0.2928  safe=0.3671
+    organ=Intestines   jam=1  avoid=0.3442  reach=0.3442  safe=0.3671
+    organ=Pancreas     jam=1  avoid=0.3364  reach=0.3364  safe=0.3671
+    organ=Kidneys      jam=1  avoid=0.3209  reach=0.3209  safe=0.3671
+[11/30] seed=10 ...
+    organ=Heart        jam=0  avoid=0.8583  reach=0.8583  safe=1.0000
+    organ=Lungs        jam=0  avoid=0.8583  reach=0.8583  safe=1.0000
+    organ=Liver        jam=0  avoid=0.8583  reach=0.8583  safe=1.0000
+    organ=Intestines   jam=0  avoid=0.8583  reach=0.8583  safe=1.0000
+    organ=Pancreas     jam=0  avoid=0.8583  reach=0.8583  safe=1.0000
+    organ=Kidneys      jam=0  avoid=0.8583  reach=0.8583  safe=1.0000
+    organ=Heart        jam=1  avoid=0.8449  reach=0.8449  safe=0.7067
+    organ=Lungs        jam=1  avoid=0.8371  reach=0.8371  safe=0.7067
+    organ=Liver        jam=1  avoid=0.8285  reach=0.8285  safe=0.7067
+    organ=Intestines   jam=1  avoid=0.8419  reach=0.8419  safe=0.7067
+    organ=Pancreas     jam=1  avoid=0.8443  reach=0.8443  safe=0.7067
+    organ=Kidneys      jam=1  avoid=0.6412  reach=0.6412  safe=0.7067
+[12/30] seed=11 ...
+    organ=Heart        jam=0  avoid=0.3967  reach=0.3967  safe=0.8923
+    organ=Lungs        jam=0  avoid=0.3970  reach=0.3970  safe=0.8923
+    organ=Liver        jam=0  avoid=0.3514  reach=0.3514  safe=0.8923
+    organ=Intestines   jam=0  avoid=0.3939  reach=0.3939  safe=0.8923
+    organ=Pancreas     jam=0  avoid=0.3967  reach=0.3967  safe=0.8923
+    organ=Kidneys      jam=0  avoid=0.2937  reach=0.2937  safe=0.8923
+    organ=Heart        jam=1  avoid=0.3490  reach=0.3490  safe=0.5865
+    organ=Lungs        jam=1  avoid=0.3653  reach=0.3653  safe=0.5865
+    organ=Liver        jam=1  avoid=0.2505  reach=0.2505  safe=0.5865
+    organ=Intestines   jam=1  avoid=0.3055  reach=0.3055  safe=0.5865
+    organ=Pancreas     jam=1  avoid=0.3583  reach=0.3583  safe=0.5865
+    organ=Kidneys      jam=1  avoid=0.2021  reach=0.2021  safe=0.5865
+[13/30] seed=12 ...
+    organ=Heart        jam=0  avoid=0.1967  reach=0.1967  safe=0.3071
+    organ=Lungs        jam=0  avoid=0.1967  reach=0.1967  safe=0.3071
+    organ=Liver        jam=0  avoid=0.1965  reach=0.1965  safe=0.3071
+    organ=Intestines   jam=0  avoid=0.1431  reach=0.1431  safe=0.3071
+    organ=Pancreas     jam=0  avoid=0.1861  reach=0.1861  safe=0.3071
+    organ=Kidneys      jam=0  avoid=0.1961  reach=0.1961  safe=0.3071
+    organ=Heart        jam=1  avoid=0.1712  reach=0.1712  safe=0.2189
+    organ=Lungs        jam=1  avoid=0.1811  reach=0.1811  safe=0.2189
+    organ=Liver        jam=1  avoid=0.1591  reach=0.1591  safe=0.2189
+    organ=Intestines   jam=1  avoid=0.0947  reach=0.0947  safe=0.2189
+    organ=Pancreas     jam=1  avoid=0.1286  reach=0.1286  safe=0.2189
+    organ=Kidneys      jam=1  avoid=0.1389  reach=0.1389  safe=0.2189
+[14/30] seed=13 ...
+    organ=Heart        jam=0  avoid=0.0019  reach=0.0019  safe=0.0033
+    organ=Lungs        jam=0  avoid=0.0018  reach=0.0018  safe=0.0033
+    organ=Liver        jam=0  avoid=0.0018  reach=0.0018  safe=0.0033
+    organ=Intestines   jam=0  avoid=0.0019  reach=0.0019  safe=0.0033
+    organ=Pancreas     jam=0  avoid=0.0019  reach=0.0019  safe=0.0033
+    organ=Kidneys      jam=0  avoid=0.0019  reach=0.0019  safe=0.0033
+    organ=Heart        jam=1  avoid=0.0012  reach=0.0012  safe=0.0023
+    organ=Lungs        jam=1  avoid=0.0010  reach=0.0010  safe=0.0023
+    organ=Liver        jam=1  avoid=0.0012  reach=0.0012  safe=0.0023
+    organ=Intestines   jam=1  avoid=0.0012  reach=0.0012  safe=0.0023
+    organ=Pancreas     jam=1  avoid=0.0012  reach=0.0012  safe=0.0023
+    organ=Kidneys      jam=1  avoid=0.0013  reach=0.0013  safe=0.0023
+[15/30] seed=14 ...
+    organ=Heart        jam=0  avoid=0.7980  reach=0.7980  safe=1.0000
+    organ=Lungs        jam=0  avoid=0.7976  reach=0.7976  safe=1.0000
+    organ=Liver        jam=0  avoid=0.7960  reach=0.7960  safe=1.0000
+    organ=Intestines   jam=0  avoid=0.7931  reach=0.7931  safe=1.0000
+    organ=Pancreas     jam=0  avoid=0.7798  reach=0.7798  safe=1.0000
+    organ=Kidneys      jam=0  avoid=0.7984  reach=0.7984  safe=1.0000
+    organ=Heart        jam=1  avoid=0.1619  reach=0.1619  safe=0.7091
+    organ=Lungs        jam=1  avoid=0.1576  reach=0.1576  safe=0.7091
+    organ=Liver        jam=1  avoid=0.1490  reach=0.1490  safe=0.7091
+    organ=Intestines   jam=1  avoid=0.1478  reach=0.1478  safe=0.7091
+    organ=Pancreas     jam=1  avoid=0.1200  reach=0.1200  safe=0.7091
+    organ=Kidneys      jam=1  avoid=0.1679  reach=0.1679  safe=0.7091
+[16/30] seed=15 ...
+    organ=Heart        jam=0  avoid=0.7330  reach=0.7330  safe=0.9616
+    organ=Lungs        jam=0  avoid=0.7330  reach=0.7330  safe=0.9616
+    organ=Liver        jam=0  avoid=0.7330  reach=0.7330  safe=0.9616
+    organ=Intestines   jam=0  avoid=0.7330  reach=0.7330  safe=0.9616
+    organ=Pancreas     jam=0  avoid=0.7330  reach=0.7330  safe=0.9616
+    organ=Kidneys      jam=0  avoid=0.7330  reach=0.7330  safe=0.9616
+    organ=Heart        jam=1  avoid=0.2948  reach=0.2948  safe=0.3456
+    organ=Lungs        jam=1  avoid=0.2986  reach=0.2986  safe=0.3456
+    organ=Liver        jam=1  avoid=0.2976  reach=0.2976  safe=0.3456
+    organ=Intestines   jam=1  avoid=0.3004  reach=0.3004  safe=0.3456
+    organ=Pancreas     jam=1  avoid=0.3002  reach=0.3002  safe=0.3456
+    organ=Kidneys      jam=1  avoid=0.2995  reach=0.2995  safe=0.3456
+[17/30] seed=16 ...
+    organ=Heart        jam=0  avoid=0.7546  reach=0.7546  safe=1.0000
+    organ=Lungs        jam=0  avoid=0.7546  reach=0.7546  safe=1.0000
+    organ=Liver        jam=0  avoid=0.7546  reach=0.7546  safe=1.0000
+    organ=Intestines   jam=0  avoid=0.7546  reach=0.7546  safe=1.0000
+    organ=Pancreas     jam=0  avoid=0.7546  reach=0.7546  safe=1.0000
+    organ=Kidneys      jam=0  avoid=0.7998  reach=0.7998  safe=1.0000
+    organ=Heart        jam=1  avoid=0.5305  reach=0.5305  safe=0.6703
+    organ=Lungs        jam=1  avoid=0.5793  reach=0.5793  safe=0.6703
+    organ=Liver        jam=1  avoid=0.4238  reach=0.4238  safe=0.6703
+    organ=Intestines   jam=1  avoid=0.6624  reach=0.6624  safe=0.6703
+    organ=Pancreas     jam=1  avoid=0.6325  reach=0.6325  safe=0.6703
+    organ=Kidneys      jam=1  avoid=0.6491  reach=0.6491  safe=0.6703
+[18/30] seed=17 ...
+    organ=Heart        jam=0  avoid=0.1453  reach=0.1453  safe=0.3455
+    organ=Lungs        jam=0  avoid=0.1441  reach=0.1441  safe=0.3455
+    organ=Liver        jam=0  avoid=0.1435  reach=0.1435  safe=0.3455
+    organ=Intestines   jam=0  avoid=0.1451  reach=0.1451  safe=0.3455
+    organ=Pancreas     jam=0  avoid=0.1431  reach=0.1431  safe=0.3455
+    organ=Kidneys      jam=0  avoid=0.1467  reach=0.1467  safe=0.3455
+    organ=Heart        jam=1  avoid=0.0502  reach=0.0502  safe=0.0082
+    organ=Lungs        jam=1  avoid=0.0518  reach=0.0518  safe=0.0082
+    organ=Liver        jam=1  avoid=0.0524  reach=0.0524  safe=0.0082
+    organ=Intestines   jam=1  avoid=0.0479  reach=0.0479  safe=0.0082
+    organ=Pancreas     jam=1  avoid=0.0500  reach=0.0500  safe=0.0082
+    organ=Kidneys      jam=1  avoid=0.0528  reach=0.0528  safe=0.0082
+[19/30] seed=18 ...
+    organ=Heart        jam=0  avoid=0.0725  reach=0.0725  safe=0.7617
+    organ=Lungs        jam=0  avoid=0.1312  reach=0.1312  safe=0.7617
+    organ=Liver        jam=0  avoid=0.1864  reach=0.1864  safe=0.7617
+    organ=Intestines   jam=0  avoid=0.1565  reach=0.1565  safe=0.7617
+    organ=Pancreas     jam=0  avoid=0.1771  reach=0.1771  safe=0.7617
+    organ=Kidneys      jam=0  avoid=0.1870  reach=0.1870  safe=0.7617
+    organ=Heart        jam=1  avoid=0.0369  reach=0.0369  safe=0.5421
+    organ=Lungs        jam=1  avoid=0.0436  reach=0.0436  safe=0.5421
+    organ=Liver        jam=1  avoid=0.0955  reach=0.0955  safe=0.5421
+    organ=Intestines   jam=1  avoid=0.0645  reach=0.0645  safe=0.5421
+    organ=Pancreas     jam=1  avoid=0.0791  reach=0.0791  safe=0.5421
+    organ=Kidneys      jam=1  avoid=0.0917  reach=0.0917  safe=0.5421
+[20/30] seed=19 ...
+    organ=Heart        jam=0  avoid=0.7010  reach=0.7010  safe=0.7179
+    organ=Lungs        jam=0  avoid=0.7010  reach=0.7010  safe=0.7179
+    organ=Liver        jam=0  avoid=0.7010  reach=0.7010  safe=0.7179
+    organ=Intestines   jam=0  avoid=0.7010  reach=0.7010  safe=0.7179
+    organ=Pancreas     jam=0  avoid=0.7010  reach=0.7010  safe=0.7179
+    organ=Kidneys      jam=0  avoid=0.7010  reach=0.7010  safe=0.7179
+    organ=Heart        jam=1  avoid=0.3230  reach=0.3230  safe=0.5010
+    organ=Lungs        jam=1  avoid=0.2982  reach=0.2982  safe=0.5010
+    organ=Liver        jam=1  avoid=0.3734  reach=0.3734  safe=0.5010
+    organ=Intestines   jam=1  avoid=0.2732  reach=0.2732  safe=0.5010
+    organ=Pancreas     jam=1  avoid=0.3441  reach=0.3441  safe=0.5010
+    organ=Kidneys      jam=1  avoid=0.3716  reach=0.3716  safe=0.5010
+[21/30] seed=20 ...
+    organ=Heart        jam=0  avoid=0.0000  reach=0.0000  safe=0.0000
+    organ=Lungs        jam=0  avoid=0.0000  reach=0.0000  safe=0.0000
+    organ=Liver        jam=0  avoid=0.0000  reach=0.0000  safe=0.0000
+    organ=Intestines   jam=0  avoid=0.0000  reach=0.0000  safe=0.0000
+    organ=Pancreas     jam=0  avoid=0.0000  reach=0.0000  safe=0.0000
+    organ=Kidneys      jam=0  avoid=0.0000  reach=0.0000  safe=0.0000
+    organ=Heart        jam=1  avoid=0.0000  reach=0.0000  safe=0.0000
+    organ=Lungs        jam=1  avoid=0.0000  reach=0.0000  safe=0.0000
+    organ=Liver        jam=1  avoid=0.0000  reach=0.0000  safe=0.0000
+    organ=Intestines   jam=1  avoid=0.0000  reach=0.0000  safe=0.0000
+    organ=Pancreas     jam=1  avoid=0.0000  reach=0.0000  safe=0.0000
+    organ=Kidneys      jam=1  avoid=0.0000  reach=0.0000  safe=0.0000
+[22/30] seed=21 ...
+    organ=Heart        jam=0  avoid=0.0548  reach=0.0548  safe=0.0576
+    organ=Lungs        jam=0  avoid=0.0576  reach=0.0576  safe=0.0576
+    organ=Liver        jam=0  avoid=0.0576  reach=0.0576  safe=0.0576
+    organ=Intestines   jam=0  avoid=0.0549  reach=0.0549  safe=0.0576
+    organ=Pancreas     jam=0  avoid=0.0563  reach=0.0563  safe=0.0576
+    organ=Kidneys      jam=0  avoid=0.0569  reach=0.0569  safe=0.0576
+    organ=Heart        jam=1  avoid=0.0461  reach=0.0461  safe=0.0401
+    organ=Lungs        jam=1  avoid=0.0413  reach=0.0413  safe=0.0401
+    organ=Liver        jam=1  avoid=0.0457  reach=0.0457  safe=0.0401
+    organ=Intestines   jam=1  avoid=0.0464  reach=0.0464  safe=0.0401
+    organ=Pancreas     jam=1  avoid=0.0486  reach=0.0486  safe=0.0401
+    organ=Kidneys      jam=1  avoid=0.0494  reach=0.0494  safe=0.0401
+[23/30] seed=22 ...
+    organ=Heart        jam=0  avoid=0.2766  reach=0.2766  safe=0.6442
+    organ=Lungs        jam=0  avoid=0.2451  reach=0.2451  safe=0.6442
+    organ=Liver        jam=0  avoid=0.2412  reach=0.2412  safe=0.6442
+    organ=Intestines   jam=0  avoid=0.2438  reach=0.2438  safe=0.6442
+    organ=Pancreas     jam=0  avoid=0.2175  reach=0.2175  safe=0.6442
+    organ=Kidneys      jam=0  avoid=0.2604  reach=0.2604  safe=0.6442
+    organ=Heart        jam=1  avoid=0.2431  reach=0.2431  safe=0.4193
+    organ=Lungs        jam=1  avoid=0.1901  reach=0.1901  safe=0.4193
+    organ=Liver        jam=1  avoid=0.2004  reach=0.2004  safe=0.4193
+    organ=Intestines   jam=1  avoid=0.2025  reach=0.2025  safe=0.4193
+    organ=Pancreas     jam=1  avoid=0.1635  reach=0.1635  safe=0.4193
+    organ=Kidneys      jam=1  avoid=0.2193  reach=0.2193  safe=0.4193
+[24/30] seed=23 ...
+    organ=Heart        jam=0  avoid=0.1353  reach=0.1353  safe=0.8095
+    organ=Lungs        jam=0  avoid=0.0753  reach=0.0753  safe=0.8095
+    organ=Liver        jam=0  avoid=0.1374  reach=0.1374  safe=0.8095
+    organ=Intestines   jam=0  avoid=0.1343  reach=0.1343  safe=0.8095
+    organ=Pancreas     jam=0  avoid=0.1389  reach=0.1389  safe=0.8095
+    organ=Kidneys      jam=0  avoid=0.1066  reach=0.1066  safe=0.8095
+    organ=Heart        jam=1  avoid=0.0589  reach=0.0589  safe=0.5729
+    organ=Lungs        jam=1  avoid=0.0273  reach=0.0273  safe=0.5729
+    organ=Liver        jam=1  avoid=0.0615  reach=0.0615  safe=0.5729
+    organ=Intestines   jam=1  avoid=0.0579  reach=0.0579  safe=0.5729
+    organ=Pancreas     jam=1  avoid=0.0638  reach=0.0638  safe=0.5729
+    organ=Kidneys      jam=1  avoid=0.0370  reach=0.0370  safe=0.5729
+[25/30] seed=24 ...
+    organ=Heart        jam=0  avoid=0.4208  reach=0.4208  safe=0.4208
+    organ=Lungs        jam=0  avoid=0.4208  reach=0.4208  safe=0.4208
+    organ=Liver        jam=0  avoid=0.4208  reach=0.4208  safe=0.4208
+    organ=Intestines   jam=0  avoid=0.4208  reach=0.4208  safe=0.4208
+    organ=Pancreas     jam=0  avoid=0.4208  reach=0.4208  safe=0.4208
+    organ=Kidneys      jam=0  avoid=0.4208  reach=0.4208  safe=0.4208
+    organ=Heart        jam=1  avoid=0.2286  reach=0.2286  safe=0.1525
+    organ=Lungs        jam=1  avoid=0.2248  reach=0.2248  safe=0.1525
+    organ=Liver        jam=1  avoid=0.2318  reach=0.2318  safe=0.1525
+    organ=Intestines   jam=1  avoid=0.2316  reach=0.2316  safe=0.1525
+    organ=Pancreas     jam=1  avoid=0.2236  reach=0.2236  safe=0.1525
+    organ=Kidneys      jam=1  avoid=0.2271  reach=0.2271  safe=0.1525
+[26/30] seed=25 ...
+    organ=Heart        jam=0  avoid=0.9775  reach=0.9775  safe=1.0000
+    organ=Lungs        jam=0  avoid=0.9775  reach=0.9775  safe=1.0000
+    organ=Liver        jam=0  avoid=0.9775  reach=0.9775  safe=1.0000
+    organ=Intestines   jam=0  avoid=0.9775  reach=0.9775  safe=1.0000
+    organ=Pancreas     jam=0  avoid=0.9775  reach=0.9775  safe=1.0000
+    organ=Kidneys      jam=0  avoid=0.9775  reach=0.9775  safe=1.0000
+    organ=Heart        jam=1  avoid=0.9204  reach=0.9204  safe=0.6938
+    organ=Lungs        jam=1  avoid=0.9191  reach=0.9191  safe=0.6938
+    organ=Liver        jam=1  avoid=0.9230  reach=0.9230  safe=0.6938
+    organ=Intestines   jam=1  avoid=0.9157  reach=0.9157  safe=0.6938
+    organ=Pancreas     jam=1  avoid=0.9088  reach=0.9088  safe=0.6938
+    organ=Kidneys      jam=1  avoid=0.9221  reach=0.9221  safe=0.6938
+[27/30] seed=26 ...
+    organ=Heart        jam=0  avoid=0.0096  reach=0.0096  safe=0.2777
+    organ=Lungs        jam=0  avoid=0.0096  reach=0.0096  safe=0.2777
+    organ=Liver        jam=0  avoid=0.0131  reach=0.0131  safe=0.2777
+    organ=Intestines   jam=0  avoid=0.0094  reach=0.0094  safe=0.2777
+    organ=Pancreas     jam=0  avoid=0.0058  reach=0.0058  safe=0.2777
+    organ=Kidneys      jam=0  avoid=0.2777  reach=0.2777  safe=0.2777
+    organ=Heart        jam=1  avoid=0.0023  reach=0.0023  safe=0.1416
+    organ=Lungs        jam=1  avoid=0.0024  reach=0.0024  safe=0.1416
+    organ=Liver        jam=1  avoid=0.0036  reach=0.0036  safe=0.1416
+    organ=Intestines   jam=1  avoid=0.0022  reach=0.0022  safe=0.1416
+    organ=Pancreas     jam=1  avoid=0.0015  reach=0.0015  safe=0.1416
+    organ=Kidneys      jam=1  avoid=0.0041  reach=0.0041  safe=0.1416
+[28/30] seed=27 ...
+    organ=Heart        jam=0  avoid=0.0516  reach=0.0516  safe=1.0000
+    organ=Lungs        jam=0  avoid=0.0581  reach=0.0581  safe=1.0000
+    organ=Liver        jam=0  avoid=0.0457  reach=0.0457  safe=1.0000
+    organ=Intestines   jam=0  avoid=0.0481  reach=0.0481  safe=1.0000
+    organ=Pancreas     jam=0  avoid=0.0410  reach=0.0410  safe=1.0000
+    organ=Kidneys      jam=0  avoid=0.0327  reach=0.0327  safe=1.0000
+    organ=Heart        jam=1  avoid=0.0095  reach=0.0095  safe=0.7071
+    organ=Lungs        jam=1  avoid=0.0108  reach=0.0108  safe=0.7071
+    organ=Liver        jam=1  avoid=0.0091  reach=0.0091  safe=0.7071
+    organ=Intestines   jam=1  avoid=0.0084  reach=0.0084  safe=0.7071
+    organ=Pancreas     jam=1  avoid=0.0077  reach=0.0077  safe=0.7071
+    organ=Kidneys      jam=1  avoid=0.0060  reach=0.0060  safe=0.7071
+[29/30] seed=28 ...
+    organ=Heart        jam=0  avoid=0.9956  reach=0.9956  safe=0.9956
+    organ=Lungs        jam=0  avoid=0.9956  reach=0.9956  safe=0.9956
+    organ=Liver        jam=0  avoid=0.9956  reach=0.9956  safe=0.9956
+    organ=Intestines   jam=0  avoid=0.9956  reach=0.9956  safe=0.9956
+    organ=Pancreas     jam=0  avoid=0.9881  reach=0.9881  safe=0.9956
+    organ=Kidneys      jam=0  avoid=0.9809  reach=0.9809  safe=0.9956
+    organ=Heart        jam=1  avoid=0.9039  reach=0.9039  safe=0.7021
+    organ=Lungs        jam=1  avoid=0.7433  reach=0.7433  safe=0.7021
+    organ=Liver        jam=1  avoid=0.8512  reach=0.8512  safe=0.7021
+    organ=Intestines   jam=1  avoid=0.7685  reach=0.7685  safe=0.7021
+    organ=Pancreas     jam=1  avoid=0.5825  reach=0.5825  safe=0.7021
+    organ=Kidneys      jam=1  avoid=0.5376  reach=0.5376  safe=0.7021
+[30/30] seed=29 ...
+    organ=Heart        jam=0  avoid=0.8529  reach=0.8529  safe=0.9849
+    organ=Lungs        jam=0  avoid=0.8529  reach=0.8529  safe=0.9849
+    organ=Liver        jam=0  avoid=0.7024  reach=0.7024  safe=0.9849
+    organ=Intestines   jam=0  avoid=0.8529  reach=0.8529  safe=0.9849
+    organ=Pancreas     jam=0  avoid=0.8529  reach=0.8529  safe=0.9849
+    organ=Kidneys      jam=0  avoid=0.8529  reach=0.8529  safe=0.9849
+    organ=Heart        jam=1  avoid=0.1879  reach=0.1879  safe=0.6951
+    organ=Lungs        jam=1  avoid=0.1713  reach=0.1713  safe=0.6951
+    organ=Liver        jam=1  avoid=0.1288  reach=0.1288  safe=0.6951
+    organ=Intestines   jam=1  avoid=0.1898  reach=0.1898  safe=0.6951
+    organ=Pancreas     jam=1  avoid=0.2058  reach=0.2058  safe=0.6951
+    organ=Kidneys      jam=1  avoid=0.0734  reach=0.0734  safe=0.6951
+
+Wrote /Users/rileyimmel/Documents/GradSchool/S26/CS6763-CPS/project/drone-cps-modeling/stormpy_files/organ_results_k200_30seeds/batch_results.csv
+Wrote /Users/rileyimmel/Documents/GradSchool/S26/CS6763-CPS/project/drone-cps-modeling/stormpy_files/organ_results_k200_30seeds/bounded_by_k.csv
+Saved figure to /Users/rileyimmel/Documents/GradSchool/S26/CS6763-CPS/project/drone-cps-modeling/stormpy_files/organ_results_k200_30seeds/avoidance_nojam.png
+Saved figure to /Users/rileyimmel/Documents/GradSchool/S26/CS6763-CPS/project/drone-cps-modeling/stormpy_files/organ_results_k200_30seeds/reachability_nojam.png
+Saved figure to /Users/rileyimmel/Documents/GradSchool/S26/CS6763-CPS/project/drone-cps-modeling/stormpy_files/organ_results_k200_30seeds/safety_nojam.png
+Saved figure to /Users/rileyimmel/Documents/GradSchool/S26/CS6763-CPS/project/drone-cps-modeling/stormpy_files/organ_results_k200_30seeds/avoidance_jam.png
+Saved figure to /Users/rileyimmel/Documents/GradSchool/S26/CS6763-CPS/project/drone-cps-modeling/stormpy_files/organ_results_k200_30seeds/reachability_jam.png
+Saved figure to /Users/rileyimmel/Documents/GradSchool/S26/CS6763-CPS/project/drone-cps-modeling/stormpy_files/organ_results_k200_30seeds/safety_jam.png
