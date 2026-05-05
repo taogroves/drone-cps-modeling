@@ -472,6 +472,158 @@ def plot_global_safety(prism_filepath, max_iters=200, tol=1e-8):
     plt.show()
 
 
+def compute_global_safety(prism_filepath, max_iters=500, tol=1e-8):
+    """
+    Pmax=? [ G !"crashed" ] at the initial state via robust value iteration.
+    Returns a single float.
+    """
+    prism_program = stormpy.parse_prism_program(prism_filepath)
+    options = stormpy.BuilderOptions()
+    model = stormpy.build_sparse_interval_model_with_options(prism_program, options)
+    initial_state = model.initial_states[0]
+    labels = model.labeling
+    crashed_states = {
+        s.id for s in model.states if "crashed" in labels.get_labels_of_state(s.id)
+    }
+
+    def robust_min_expected(action, prev):
+        bounded, lower_sum = [], 0.0
+        for tr in action.transitions:
+            iv = tr.value()
+            lo, hi = float(iv.lower()), float(iv.upper())
+            bounded.append([prev[tr.column], lo, hi])
+            lower_sum += lo
+        exp = sum(v * lo for v, lo, _ in bounded)
+        rem = max(0.0, 1.0 - lower_sum)
+        bounded.sort(key=lambda x: x[0])
+        for v, lo, hi in bounded:
+            if rem <= 0.0:
+                break
+            add = min(hi - lo, rem)
+            exp += v * add
+            rem -= add
+        return exp
+
+    values = {s.id: (0.0 if s.id in crashed_states else 1.0) for s in model.states}
+    for _ in range(max_iters):
+        nv, max_diff = {}, 0.0
+        for state in model.states:
+            s = state.id
+            if s in crashed_states or not list(state.actions):
+                nv[s] = 0.0
+            else:
+                nv[s] = max(robust_min_expected(a, values) for a in state.actions)
+            max_diff = max(max_diff, abs(nv[s] - values[s]))
+        values = nv
+        if max_diff < tol:
+            break
+    return values[initial_state]
+
+
+def compute_all_bounded_curves_per_organ(prism_filepath, max_k=30, organ_types=None):
+    """
+    Compute bounded Pmax curves for avoidance, reachability, and safety across
+    all organ types in a single model build and VI pass.
+
+    organ goal label for organ X is "goal_<organ.lower()>".
+    Safety (G !"crashed") is organ-independent but returned per organ for convenience.
+
+    Returns dict: organ_name -> (avoidance_curve, reach_curve, safe_curve)
+    Each curve is a list of length (max_k + 1); index j = value at K=j.
+    """
+    if organ_types is None:
+        organ_types = ["Heart", "Lungs", "Liver", "Intestines", "Pancreas", "Kidneys"]
+
+    prism_program = stormpy.parse_prism_program(prism_filepath)
+    options = stormpy.BuilderOptions()
+    model = stormpy.build_sparse_interval_model_with_options(prism_program, options)
+    initial_state = model.initial_states[0]
+    labels = model.labeling
+
+    crashed_states = {
+        s.id for s in model.states if "crashed" in labels.get_labels_of_state(s.id)
+    }
+    goal_states = {
+        organ: {
+            s.id
+            for s in model.states
+            if f"goal_{organ.lower()}" in labels.get_labels_of_state(s.id)
+        }
+        for organ in organ_types
+    }
+
+    def robust_min_expected(action, prev):
+        bounded, lower_sum = [], 0.0
+        for tr in action.transitions:
+            iv = tr.value()
+            lo, hi = float(iv.lower()), float(iv.upper())
+            bounded.append([prev[tr.column], lo, hi])
+            lower_sum += lo
+        exp = sum(v * lo for v, lo, _ in bounded)
+        rem = max(0.0, 1.0 - lower_sum)
+        bounded.sort(key=lambda x: x[0])
+        for v, lo, hi in bounded:
+            if rem <= 0.0:
+                break
+            add = min(hi - lo, rem)
+            exp += v * add
+            rem -= add
+        return exp
+
+    avoid_v = {
+        organ: {s.id: (1.0 if s.id in goal_states[organ] else 0.0) for s in model.states}
+        for organ in organ_types
+    }
+    reach_v = {
+        organ: {s.id: (1.0 if s.id in goal_states[organ] else 0.0) for s in model.states}
+        for organ in organ_types
+    }
+    safe_v = {s.id: (0.0 if s.id in crashed_states else 1.0) for s in model.states}
+
+    avoid_curves = {organ: [avoid_v[organ][initial_state]] for organ in organ_types}
+    reach_curves  = {organ: [reach_v[organ][initial_state]] for organ in organ_types}
+    safe_curve    = [safe_v[initial_state]]
+
+    for _ in range(max_k):
+        new_safe = {}
+        new_avoid = {organ: {} for organ in organ_types}
+        new_reach  = {organ: {} for organ in organ_types}
+
+        for state in model.states:
+            s = state.id
+            acts = list(state.actions)
+
+            if s in crashed_states or not acts:
+                new_safe[s] = 0.0
+            else:
+                new_safe[s] = max(robust_min_expected(a, safe_v) for a in acts)
+
+            for organ in organ_types:
+                gs = goal_states[organ]
+                if s in gs:
+                    new_avoid[organ][s] = 1.0
+                    new_reach[organ][s] = 1.0
+                elif not acts:
+                    new_avoid[organ][s] = 0.0
+                    new_reach[organ][s] = 0.0
+                else:
+                    new_reach[organ][s] = max(robust_min_expected(a, reach_v[organ]) for a in acts)
+                    new_avoid[organ][s] = (
+                        0.0 if s in crashed_states
+                        else max(robust_min_expected(a, avoid_v[organ]) for a in acts)
+                    )
+
+        safe_v = new_safe
+        safe_curve.append(safe_v[initial_state])
+        for organ in organ_types:
+            avoid_v[organ] = new_avoid[organ]
+            reach_v[organ] = new_reach[organ]
+            avoid_curves[organ].append(avoid_v[organ][initial_state])
+            reach_curves[organ].append(reach_v[organ][initial_state])
+
+    return {organ: (avoid_curves[organ], reach_curves[organ], safe_curve) for organ in organ_types}
+
+
 if __name__ == "__main__":
     # Generate a random seed
     my_seed = random.randint(1000, 9999)
