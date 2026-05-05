@@ -540,7 +540,7 @@ def main() -> int:
     print(f"\nWrote {batch_csv}")
 
     # Write bounded_by_k.csv
-    bounded_csv = os.path.join(out_dir, "bounded_by_k.csv")
+    bounded_csv = os.path.join(out_dir, "bounded_by_k_v2.csv")
     bounded_rows_flat: list[dict] = []
     k_max = args.bounded_k_max
     for r in all_rows:

@@ -54,3 +54,8 @@ data/private/
 # Cursor metadata
 .cursorignore
 .cursorindexingignore
+
+
+**/storm-env/
+**/venv/
+**/__pycache__/
