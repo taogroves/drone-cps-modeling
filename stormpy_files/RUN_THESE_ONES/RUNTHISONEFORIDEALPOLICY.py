@@ -356,9 +356,9 @@ def synthesize_and_visualize(prism_filepath):
 		for y in range(1, max_y + 1):
 			facecolor = "white"
 			if (x, y) in goal_positions:
-				facecolor = "#d9ead3"
+				facecolor = "#2ca02c"
 			elif (x, y) in obstacles:
-				facecolor = "#f4cccc"
+				facecolor = "#d62728"
 
 			rect = patches.Rectangle(
 				(x - 1, y - 1),
@@ -443,10 +443,10 @@ def synthesize_and_visualize(prism_filepath):
 
 
 if __name__ == "__main__":
-	my_seed = random.randint(1000, 9999)
+	my_seed = 1596#random.randint(1000, 9999)
 	print(f"Generating environment with seed: {my_seed}...")
 
-	M, N = 12, 12
+	M, N = 30, 30
 	new_prism_file = generate_random_prism(M=M, N=N, num_obstacles=30, seed=my_seed)
 	print(f"Successfully saved to: {new_prism_file}")
 
