@@ -132,10 +132,10 @@ def generate_random_prism(M: int = 5, N: int = 6, num_obstacles: int = 3, seed=N
 
 	prism_template = f"""mdp
 
-// Model parameters 
-const double p = 0.1;
-const double e = 0.02;
-formula a = x * e;
+// Model parameters
+const double p = 0.01;
+const double e = 0.01;
+formula a = e;
 
 const int M = {M};
 const int N = {N};
